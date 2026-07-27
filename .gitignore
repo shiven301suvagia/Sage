@@ -45,3 +45,23 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+# Generated desktop assets and compiled binaries
+*.ico
+*.icns
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.avif
+*.bmp
+*.tiff
+*.exe
+*.dll
+*.dylib
+*.so
+*.app/
+*.msi
+*.dmg
+*.pkg
+target/
