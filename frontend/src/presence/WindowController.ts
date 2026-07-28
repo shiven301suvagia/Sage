@@ -1,5 +1,5 @@
 import { RenderingEngine } from '../rendering/index.js';
-import type { DpiScale, RenderPoint, RenderWindowState } from '../rendering/index.js';
+import type { CharacterFrame, CursorPoint, DpiScale, RenderPoint, RenderWindowState } from '../rendering/index.js';
 import type { WindowPort } from './types.js';
 
 export class WindowController implements WindowPort {
@@ -34,6 +34,14 @@ export class WindowController implements WindowPort {
 
   setDpiScale(scale: DpiScale): void {
     this.renderer.setScale(scale);
+  }
+
+  updateCursor(point: CursorPoint): void {
+    this.renderer.updateCursor(point);
+  }
+
+  characterFrame(nowMs: number): CharacterFrame {
+    return this.renderer.characterFrame(nowMs);
   }
 
   get renderState(): RenderWindowState {

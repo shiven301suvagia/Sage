@@ -63,3 +63,31 @@ export interface PlaceholderFrame {
   readonly floatOffsetY: number;
   readonly particleOpacity: number;
 }
+
+export type CharacterRuntimeState = 'Dormant' | 'Waking' | 'Idle' | 'Sleeping';
+
+export interface CursorPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface CharacterMotionLayer {
+  readonly name: 'Idle' | 'Breathing' | 'Blink' | 'CursorFollow' | CharacterRuntimeState;
+  readonly weight: number;
+}
+
+export interface CharacterFrame {
+  readonly state: CharacterRuntimeState;
+  readonly opacity: number;
+  readonly glow: number;
+  readonly scaleX: number;
+  readonly scaleY: number;
+  readonly offsetY: number;
+  readonly eyeOpen: number;
+  readonly smile: number;
+  readonly eyeX: number;
+  readonly eyeY: number;
+  readonly headX: number;
+  readonly headY: number;
+  readonly layers: readonly CharacterMotionLayer[];
+}
