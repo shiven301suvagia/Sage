@@ -1,5 +1,6 @@
 import { RenderAnimationSystem } from './AnimationSystem.js';
-import type { DpiScale, Particle, PlaceholderFrame, RenderLayer, RenderPoint, RenderSize, RenderWindowState } from './types.js';
+import { CharacterRuntime } from './CharacterRuntime.js';
+import type { CharacterFrame, CursorPoint, DpiScale, Particle, PlaceholderFrame, RenderLayer, RenderPoint, RenderSize, RenderWindowState } from './types.js';
 
 export const renderLayers: readonly RenderLayer[] = [
   { name: 'Rendering', zIndex: 10, enabled: true, reservedForFutureUse: false },
@@ -13,6 +14,7 @@ const supportedScales: readonly DpiScale[] = [1, 1.25, 1.5, 2];
 
 export class RenderingEngine {
   private readonly animationSystem = new RenderAnimationSystem();
+  private readonly characterRuntime = new CharacterRuntime();
   private visible = false;
   private position: RenderPoint = { x: 120, y: 120 };
   private scale: DpiScale = 1;
@@ -32,18 +34,29 @@ export class RenderingEngine {
   wake(nowMs = 0): void {
     this.visible = true;
     this.animationSystem.play('Wake', nowMs);
+    this.characterRuntime.wake(nowMs);
   }
 
   sleep(nowMs = 0): void {
     this.animationSystem.play('Sleep', nowMs);
+    this.characterRuntime.sleep(nowMs);
   }
 
   idle(nowMs = 0): void {
     this.animationSystem.play('Idle', nowMs);
+    this.characterRuntime.idle(nowMs);
   }
 
   hover(nowMs = 0): void {
     this.animationSystem.play('Hover', nowMs);
+  }
+
+  updateCursor(point: CursorPoint): void {
+    this.characterRuntime.updateCursor(point);
+  }
+
+  characterFrame(nowMs: number): CharacterFrame {
+    return this.characterRuntime.frame(nowMs);
   }
 
   setPosition(position: RenderPoint): void {

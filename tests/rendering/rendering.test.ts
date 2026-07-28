@@ -103,3 +103,55 @@ test('presence window controller delegates position, scaling, and visibility to 
   assert.deepEqual(window.renderState.size, { width: 640, height: 640 });
   assert.equal(window.hasCharacter, true);
 });
+
+test('character runtime blends idle breathing blink and cursor follow into one frame', () => {
+  const renderer = new RenderingEngine();
+  renderer.wake(0);
+  renderer.idle(800);
+  renderer.updateCursor({ x: 1, y: 0 });
+
+  const first = renderer.characterFrame(900);
+  const second = renderer.characterFrame(1200);
+
+  assert.equal(first.state, 'Idle');
+  assert.equal(first.layers.some((layer) => layer.name === 'Breathing' && layer.weight > 0), true);
+  assert.equal(first.layers.some((layer) => layer.name === 'CursorFollow' && layer.weight > 0), true);
+  assert.equal(Math.abs(first.headX) <= 8 && Math.abs(first.headY) <= 6, true);
+  assert.equal(Math.abs(first.eyeX) <= 6 && Math.abs(first.eyeY) <= 4, true);
+  assert.equal(second.eyeX > first.eyeX, true);
+  assert.equal(second.headX > first.headX, true);
+});
+
+test('character wake and sleep frames fade smoothly with expression changes', () => {
+  const renderer = new RenderingEngine();
+
+  renderer.wake(0);
+  const waking = renderer.characterFrame(520);
+  assert.equal(waking.opacity > 0 && waking.opacity <= 1, true);
+  assert.equal(waking.glow > 0.36, true);
+  assert.equal(waking.smile > 0, true);
+
+  renderer.sleep(1000);
+  const sleeping = renderer.characterFrame(1400);
+  assert.equal(sleeping.opacity < waking.opacity, true);
+  assert.equal(sleeping.eyeOpen, 0);
+});
+
+test('blink timing is randomized and idle can advance indefinitely', () => {
+  const renderer = new RenderingEngine();
+  renderer.idle(0);
+
+  const blinkTimes: number[] = [];
+  let wasBlinking = false;
+  for (let now = 0; now <= 30_000; now += 50) {
+    const frame = renderer.characterFrame(now);
+    const blinking = frame.layers.some((layer) => layer.name === 'Blink' && layer.weight > 0.1);
+    if (blinking && !wasBlinking) blinkTimes.push(now);
+    wasBlinking = blinking;
+    assert.equal(Number.isFinite(frame.offsetY), true);
+  }
+
+  const intervals = blinkTimes.slice(1).map((time, index) => time - blinkTimes[index]!);
+  assert.equal(blinkTimes.length >= 4, true);
+  assert.equal(new Set(intervals).size > 1, true);
+});
