@@ -9,11 +9,12 @@ export interface AssistantCoreOptions {
 }
 
 /**
- * Deterministic assistant boundary. Model/tool integrations can be added later
- * without allowing them to directly control the character runtime.
+ * Offline-first assistant boundary. The desktop runtime owns permissions;
+ * this core never performs network access itself.
  */
 export class AssistantCore {
   private readonly minInputLength: number;
+  private readonly memory = new Map<string, string>();
 
   constructor(
     private readonly events: EventBus,
@@ -30,8 +31,25 @@ export class AssistantCore {
     }
 
     const lower = normalized.toLowerCase();
+
     if (/^(hi|hello|hey|hiya)\b/.test(lower)) {
-      return { kind: 'respond', text: 'Hey. I’m here. What are we working on?' };
+      return { kind: 'respond', text: 'Hey. I’m Sage. I’m right here. What are we working on?' };
+    }
+
+    if (lower.includes('who are you') || lower.includes('your name')) {
+      return { kind: 'respond', text: 'I’m Sage — your local desktop companion. I can stay with you offline, and online access can be enabled when you choose.' };
+    }
+
+    if (lower.includes('offline')) {
+      return { kind: 'respond', text: 'Offline mode is my default. I can keep my local companion features running without the internet.' };
+    }
+
+    if (lower.includes('remember ') || lower.includes('remember that ')) {
+      const value = normalized.replace(/^.*?remember(?: that)?\s+/i, '').trim();
+      if (value) {
+        this.memory.set(`memory-${this.memory.size + 1}`, value);
+        return { kind: 'respond', text: 'Got it. I’ll keep that in my local session memory.' };
+      }
     }
 
     if (lower.includes('thank')) {
@@ -40,7 +58,7 @@ export class AssistantCore {
 
     return {
       kind: 'respond',
-      text: 'I heard you. I’m ready for the next step.',
+      text: 'I’m listening. Tell me what you want to work on.',
     };
   }
 
