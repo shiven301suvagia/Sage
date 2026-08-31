@@ -16,13 +16,21 @@ export class VoiceController {
   async startListening(): Promise<void> {
     if (this.state === 'speaking' || this.state === 'listening') return;
     this.state = 'listening';
-    await this.recognizer.start();
+    try {
+      await this.recognizer.start();
+    } catch (error) {
+      this.state = 'idle';
+      throw error;
+    }
   }
 
   async stopListening(): Promise<void> {
     if (this.state !== 'listening') return;
-    await this.recognizer.stop();
-    this.state = 'idle';
+    try {
+      await this.recognizer.stop();
+    } finally {
+      this.state = 'idle';
+    }
   }
 
   async speak(text: string): Promise<void> {
@@ -33,8 +41,8 @@ export class VoiceController {
   }
 
   async stopSpeaking(): Promise<void> {
-    await this.synthesizer.stop();
-    this.state = 'idle';
+    try { await this.synthesizer.stop(); }
+    finally { this.state = 'idle'; }
   }
 
   dispose(): void {
@@ -44,7 +52,7 @@ export class VoiceController {
   private handleResult(result: SpeechRecognitionResult): void {
     if (!result.isFinal || !result.text.trim()) return;
     this.state = 'processing';
-    this.events.emit({ type: 'user.input', payload: { text: result.text, timestampMs: Date.now() } });
+    this.events.emit({ type: 'user.input', payload: { text: result.text.trim(), timestampMs: Date.now() } });
     this.state = 'idle';
   }
 
