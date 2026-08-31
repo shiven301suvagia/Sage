@@ -30,11 +30,12 @@ export class InteractionPolicy {
       return { kind: 'respond', reason: 'user-input' };
     }
 
+    const previousActivityMs = this.lastActivityMs;
     this.lastActivityMs = now;
     if (now - this.lastInteractionMs < this.cooldownMs) {
       return { kind: 'ignore', reason: 'Interaction cooldown is active.' };
     }
-    if (now - this.lastActivityMs < this.minActivityGapMs) {
+    if (now - previousActivityMs < this.minActivityGapMs) {
       return { kind: 'ignore', reason: 'Activity is too recent.' };
     }
     return { kind: 'ignore', reason: 'Background activity is passive by default.' };
