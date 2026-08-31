@@ -12,26 +12,33 @@ async function loadAssistant() {
       import('../dist/frontend/src/assistant/EventBus.js'),
       import('../dist/frontend/src/assistant/AssistantCore.js'),
     ]);
-    const events = new EventBus();
-    assistant = new AssistantCore(events);
-    return true;
+    assistant = new AssistantCore(new EventBus());
   } catch {
     assistant = undefined;
-    return false;
   }
+}
+
+function placeNearCorner() {
+  if (!mainWindow) return;
+  const bounds = screen.getPrimaryDisplay().workArea;
+  const [width, height] = mainWindow.getSize();
+  mainWindow.setPosition(bounds.x + bounds.width - width - 24, bounds.y + bounds.height - height - 24);
 }
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 420,
-    height: 620,
-    minWidth: 320,
-    minHeight: 420,
+    width: 280,
+    height: 330,
+    minWidth: 240,
+    minHeight: 280,
+    maxWidth: 360,
+    maxHeight: 440,
     frame: false,
     transparent: true,
     resizable: true,
     alwaysOnTop: true,
     skipTaskbar: true,
+    hasShadow: false,
     backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
@@ -40,9 +47,9 @@ function createWindow() {
       sandbox: true,
     },
   });
-
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.setAlwaysOnTop(true, 'floating');
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.once('ready-to-show', placeNearCorner);
 }
 
 app.whenReady().then(async () => {
@@ -51,7 +58,7 @@ app.whenReady().then(async () => {
 
   globalShortcut.register('CommandOrControl+Shift+S', () => {
     if (!mainWindow) return;
-    if (mainWindow.isVisible()) mainWindow.hide(); else mainWindow.show();
+    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
   });
 
   ipcMain.handle('window:hide', () => mainWindow?.hide());
@@ -62,12 +69,15 @@ app.whenReady().then(async () => {
     mainWindow.setAlwaysOnTop(next, 'floating');
     return next;
   });
-  ipcMain.handle('window:center', () => {
-    if (!mainWindow) return;
-    const display = screen.getPrimaryDisplay();
-    const bounds = display.workArea;
+  ipcMain.handle('window:center', placeNearCorner);
+  ipcMain.handle('window:move', (_event, x, y) => {
+    if (!mainWindow || !Number.isFinite(x) || !Number.isFinite(y)) return false;
+    const bounds = screen.getPrimaryDisplay().workArea;
     const [width, height] = mainWindow.getSize();
-    mainWindow.setPosition(Math.round(bounds.x + bounds.width - width - 28), Math.round(bounds.y + bounds.height - height - 28));
+    const nextX = Math.max(bounds.x, Math.min(Math.round(x), bounds.x + bounds.width - width));
+    const nextY = Math.max(bounds.y, Math.min(Math.round(y), bounds.y + bounds.height - height));
+    mainWindow.setPosition(nextX, nextY);
+    return true;
   });
   ipcMain.handle('assistant:message', (_event, rawText) => {
     if (typeof rawText !== 'string') return { ok: false, text: 'I could not read that message.' };
