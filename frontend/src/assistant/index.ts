@@ -8,3 +8,5 @@ export { CharacterAssistantBridge } from './CharacterAssistantBridge.js';
 export type { CharacterAssistantBridgeOptions } from './CharacterAssistantBridge.js';
 export { InteractionPolicy } from './InteractionPolicy.js';
 export type { InteractionDecision, InteractionPolicyOptions } from './InteractionPolicy.js';
+export { createAssistantIntegration } from './AssistantIntegration.js';
+export type { AssistantIntegration } from './AssistantIntegration.js';
