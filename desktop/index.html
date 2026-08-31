@@ -1,39 +1,95 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SAGE</title>
 <style>
-:root{font-family:Inter,Segoe UI,sans-serif;color:#eaf7f0}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}body{display:grid;place-items:center}.stage{position:relative;width:100%;height:100%;display:grid;place-items:center}.sage{width:180px;height:300px;opacity:.6;transform-origin:50% 90%;animation:float 4s ease-in-out infinite;transition:opacity .35s ease,filter .35s ease,transform .35s ease;cursor:pointer}.sage.active{opacity:1;filter:drop-shadow(0 0 18px rgba(91,189,138,.45));transform:scale(1.02)}.sage .eye{transform-box:fill-box;transform-origin:center;transition:transform .12s ease}.bubble{position:absolute;left:50%;top:8px;transform:translateX(-50%) translateY(8px);width:240px;padding:10px 13px;border:1px solid rgba(164,224,191,.22);border-radius:15px;background:rgba(7,18,14,.9);box-shadow:0 10px 32px rgba(0,0,0,.28);font-size:13px;line-height:1.35;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}.bubble.show{opacity:1;transform:translateX(-50%) translateY(0)}.panel{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);width:280px;padding:12px;border:1px solid rgba(164,224,191,.18);border-radius:18px;background:rgba(7,18,14,.96);box-shadow:0 18px 50px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .18s}.panel.show{opacity:1;pointer-events:auto}.panel form{display:flex;gap:7px}.panel input{flex:1;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.06);color:inherit;padding:9px;outline:none}.panel button{border:0;border-radius:10px;background:#70c99a;color:#082016;font-weight:700;padding:0 11px;cursor:pointer}.status{position:absolute;right:8px;bottom:3px;font-size:10px;color:#7f9d90}.net{position:absolute;left:8px;bottom:3px;font-size:10px;color:#7f9d90;cursor:pointer}.net.on{color:#9be7ba}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}@media(prefers-reduced-motion:reduce){.sage{animation:none}}
+:root{font-family:Inter,Segoe UI,sans-serif;color:#fff6df}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}body{user-select:none}.stage{position:relative;width:100%;height:100%;background:transparent}.sage-wrap{position:absolute;inset:0;display:grid;place-items:end center;padding-bottom:2px}.sage{width:210px;height:350px;overflow:visible;opacity:.6;transform-origin:50% 92%;cursor:grab;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));transition:opacity .45s ease,filter .45s ease,transform .45s ease}.sage:active{cursor:grabbing}.sage.active{opacity:1;filter:drop-shadow(0 0 20px rgba(244,181,64,.34)) drop-shadow(0 10px 20px rgba(0,0,0,.24));transform:scale(1.015)}.sage .eye{transform-box:fill-box;transform-origin:center;transition:transform .12s ease}.sage .flower{transform-box:fill-box;transform-origin:center;animation:sway 4s ease-in-out infinite}.sage .flower:nth-of-type(2n){animation-delay:-1.2s}.sage .breath{animation:breathe 3.6s ease-in-out infinite;transform-origin:center bottom}.sage .float{animation:float 4.5s ease-in-out infinite}.bubble{position:absolute;left:4px;top:10px;width:205px;padding:10px 13px;border:1px solid rgba(244,181,64,.55);border-radius:16px 16px 16px 5px;background:rgba(15,18,25,.94);box-shadow:0 10px 30px rgba(0,0,0,.3);font-size:12px;line-height:1.35;opacity:0;pointer-events:none;transform:translateY(6px);transition:opacity .2s,transform .2s}.bubble.show{opacity:1;transform:none}.panel{position:absolute;left:4px;bottom:8px;width:270px;padding:11px;border:1px solid rgba(244,181,64,.38);border-radius:17px;background:rgba(10,14,20,.97);box-shadow:0 18px 50px rgba(0,0,0,.42);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s,transform .18s}.panel.show{opacity:1;pointer-events:auto;transform:none}.panel form{display:flex;gap:7px}.panel input{flex:1;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.06);color:inherit;padding:9px;outline:none}.panel button{border:0;border-radius:10px;background:#f0b44b;color:#18130a;font-weight:800;padding:0 11px;cursor:pointer}.close{margin-top:7px;width:100%;border:0;border-radius:9px;background:rgba(255,255,255,.08);color:#d8d0bf;padding:5px;cursor:pointer}.status{position:absolute;right:5px;bottom:2px;font-size:9px;color:rgba(255,246,223,.58);pointer-events:none}.net{position:absolute;left:5px;bottom:2px;border:0;background:none;color:rgba(255,246,223,.58);font-size:9px;cursor:pointer}.net.on{color:#79d59b}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.012)}}@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg)}}@media(prefers-reduced-motion:reduce){.sage,.sage .flower,.sage .breath,.sage .float{animation:none}}
 </style>
 </head>
-<body><main class="stage"><div class="bubble" id="bubble"></div>
-<svg class="sage" id="sage" viewBox="0 0 180 300" aria-label="SAGE desktop companion" tabindex="0">
-<defs><linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#163c2d"/><stop offset="1" stop-color="#0a2118"/></linearGradient><linearGradient id="apron" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b8f0d2"/><stop offset="1" stop-color="#5bbd8a"/></linearGradient><radialGradient id="skin"><stop stop-color="#fff1e6"/><stop offset="1" stop-color="#e7c8b7"/></radialGradient></defs>
-<ellipse cx="90" cy="285" rx="48" ry="8" fill="#63d19a" opacity=".18"/>
-<path d="M42 91C34 43 57 17 91 17c39 0 61 31 48 77-7 27-25 43-49 43S47 118 42 91Z" fill="url(#hair)"/>
-<path d="M52 76c0-31 16-47 39-47 27 0 42 20 38 49-4 31-22 46-39 46-22 0-38-20-38-48Z" fill="url(#skin)"/>
-<path d="M50 70c6-29 20-43 42-43 25 0 39 18 41 41-13-9-22-22-26-36-13 16-32 25-57 28Z" fill="url(#hair)"/>
-<ellipse class="eye" id="eye1" cx="76" cy="77" rx="5" ry="8" fill="#173d2e"/><ellipse class="eye" id="eye2" cx="104" cy="77" rx="5" ry="8" fill="#173d2e"/>
-<path d="M80 98c6 5 14 5 20 0" fill="none" stroke="#173d2e" stroke-width="2.5" stroke-linecap="round"/>
-<path d="M55 138c10-9 23-14 35-14s26 5 35 14l-7 17H62Z" fill="#173d2e"/>
-<path d="M43 274c3-61 18-96 47-108 30 12 44 47 47 108Z" fill="url(#apron)"/>
-<path d="M67 169h46M69 193h42" stroke="#3b8d67" stroke-width="3" stroke-linecap="round" opacity=".7"/>
-<path d="M48 165c-18 14-25 35-22 57M132 165c18 14 25 35 22 57" fill="none" stroke="#e7c8b7" stroke-width="14" stroke-linecap="round"/>
-<circle cx="26" cy="224" r="9" fill="#e7c8b7"/><circle cx="154" cy="224" r="9" fill="#e7c8b7"/>
-<path d="M67 274h-7l-7 16h28l-5-16M113 274h7l7 16H99l5-16" fill="#163c2d"/>
-</svg>
-<div class="status" id="status">Idle · 60%</div><button class="net" id="net">Offline</button>
-<section class="panel" id="panel"><form id="form"><input id="message" autocomplete="off" placeholder="Talk to SAGE…"><button>Send</button></form></section></main>
+<body>
+<main class="stage">
+<div class="bubble" id="bubble"></div>
+<div class="sage-wrap"><svg class="sage float" id="sage" viewBox="0 0 210 350" aria-label="SAGE desktop companion" tabindex="0">
+<defs>
+<linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16151b"/><stop offset=".65" stop-color="#292128"/><stop offset="1" stop-color="#111016"/></linearGradient>
+<linearGradient id="hoodie" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0d5"/><stop offset="1" stop-color="#d8b98b"/></linearGradient>
+<linearGradient id="shorts" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#26252a"/><stop offset="1" stop-color="#121217"/></linearGradient>
+<linearGradient id="shoe" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff2d9"/><stop offset="1" stop-color="#c8a36b"/></linearGradient>
+<radialGradient id="skin"><stop stop-color="#fff2df"/><stop offset="1" stop-color="#e8bfa8"/></radialGradient>
+</defs>
+<!-- soft grounding -->
+<ellipse cx="105" cy="337" rx="61" ry="8" fill="#f4b540" opacity=".16"/>
+<!-- long hair silhouette -->
+<path class="breath" d="M39 108C24 64 37 27 74 15c20-7 48-3 67 12 31 25 30 67 16 103l-5 65c-4 22-19 38-35 43H72c-22-9-32-29-33-55Z" fill="url(#hair)"/>
+<!-- flowing side locks -->
+<path d="M47 87C21 117 27 177 43 212c8 17 19 24 28 24l-8-72Z" fill="#19171e"/>
+<path d="M163 86c28 32 23 93 7 126-8 16-18 24-28 24l8-72Z" fill="#19171e"/>
+<!-- face -->
+<path d="M57 76c0-37 21-57 48-57 29 0 50 22 48 58-2 41-22 62-49 62-29 0-47-23-47-63Z" fill="url(#skin)"/>
+<!-- bangs -->
+<path d="M56 73c3-37 22-55 49-55 27 0 44 18 49 47-16-5-28-19-35-36-11 20-33 35-63 44Z" fill="url(#hair)"/>
+<path d="M69 53c10-13 17-24 19-35l13 27c-9 10-20 16-32 20Z" fill="#1b1820"/>
+<!-- eyes -->
+<ellipse class="eye" id="eye1" cx="82" cy="79" rx="7" ry="10" fill="#6e4316"/><ellipse class="eye" id="eye2" cx="128" cy="79" rx="7" ry="10" fill="#6e4316"/>
+<circle cx="80" cy="76" r="2.4" fill="#fff3dc"/><circle cx="126" cy="76" r="2.4" fill="#fff3dc"/>
+<!-- blush + smile -->
+<ellipse cx="68" cy="98" rx="11" ry="5" fill="#ef9f8d" opacity=".35"/><ellipse cx="142" cy="98" rx="11" ry="5" fill="#ef9f8d" opacity=".35"/>
+<path d="M94 106c7 7 15 7 22 0" fill="none" stroke="#563326" stroke-width="3" stroke-linecap="round"/>
+<!-- flowers / stars -->
+<g class="flower" fill="#f4b540" stroke="#ffe7a9" stroke-width="1"><circle cx="49" cy="51" r="8"/><circle cx="49" cy="43" r="5"/><circle cx="57" cy="51" r="5"/><circle cx="49" cy="59" r="5"/><circle cx="41" cy="51" r="5"/><circle cx="49" cy="51" r="3" fill="#fff1cf"/></g>
+<g class="flower" fill="#fff0d5" stroke="#f4b540" stroke-width="1"><circle cx="157" cy="57" r="7"/><circle cx="157" cy="50" r="4"/><circle cx="164" cy="57" r="4"/><circle cx="157" cy="64" r="4"/><circle cx="150" cy="57" r="4"/></g>
+<path d="M42 111l3-7 3 7 7 3-7 3-3 7-3-7-7-3Z" fill="#f4b540"/><path d="M157 105l2-5 2 5 5 2-5 2-2 5-2-5-5-2Z" fill="#f4b540"/>
+<!-- ears / star earrings -->
+<path d="M61 113l-6 8 8 1 4 7 5-10Z" fill="#f4b540"/><path d="M149 113l6 8-8 1-4 7-5-10Z" fill="#f4b540"/>
+<!-- hoodie body -->
+<g class="breath">
+<path d="M68 135c12-12 23-17 37-17s27 5 38 17l22 38-19 10-8-17v75H72v-75l-8 17-19-10Z" fill="url(#hoodie)" stroke="#c39b6d" stroke-width="1"/>
+<!-- hood -->
+<path d="M75 134c5-16 15-23 30-23s26 8 31 23l-13 13H88Z" fill="#e8c99c" stroke="#c39b6d" stroke-width="1"/>
+<path d="M87 133c8 7 27 7 36 0" fill="none" stroke="#a9865c" stroke-width="2"/>
+<!-- hoodie strings -->
+<path d="M87 137v22M123 137v22" stroke="#806242" stroke-width="2"/><circle cx="87" cy="160" r="3" fill="#f4b540"/><circle cx="123" cy="160" r="3" fill="#f4b540"/>
+<!-- flower emblem -->
+<g transform="translate(137 181)" fill="#f4b540"><circle r="6"/><circle cy="-7" r="4"/><circle cx="7" r="4"/><circle cy="7" r="4"/><circle cx="-7" r="4"/></g>
+<!-- pocket -->
+<path d="M78 208h52c0 16-10 25-26 25s-26-9-26-25Z" fill="#d2b183" opacity=".72"/>
+</g>
+<!-- arms -->
+<path d="M67 157c-17 12-23 31-25 52-2 16 5 27 14 27 9 0 13-9 11-20l8-42Z" fill="url(#hoodie)" stroke="#c39b6d" stroke-width="1"/>
+<path d="M143 157c17 12 23 31 25 52 2 16-5 27-14 27-9 0-13-9-11-20l-8-42Z" fill="url(#hoodie)" stroke="#c39b6d" stroke-width="1"/>
+<circle cx="55" cy="226" r="8" fill="url(#skin)"/><circle cx="155" cy="226" r="8" fill="url(#skin)"/>
+<!-- shorts -->
+<path d="M72 253h66l7 36-30 4-10-27-10 27-30-4Z" fill="url(#shorts)"/>
+<!-- thigh highs -->
+<path d="M77 285h28l-3 36H73Z" fill="#15141a"/><path d="M105 285h28l4 36h-29Z" fill="#15141a"/>
+<!-- shoes -->
+<path d="M70 317h33l8 13H66c-4 0-5-5-2-8Z" fill="url(#shoe)" stroke="#a77f4d"/><path d="M108 317h33c4 0 7 5 5 8l-2 5h-43Z" fill="url(#shoe)" stroke="#a77f4d"/>
+<path d="M82 319l15 8M88 317l14 8M120 319l15 8M126 317l14 8" stroke="#7f674b" stroke-width="2"/>
+<!-- SAGE utility charm -->
+<rect x="45" y="187" width="20" height="27" rx="5" fill="#f4b540" stroke="#ffe4a0"/><text x="55" y="205" text-anchor="middle" font-size="8" font-weight="800" fill="#33230d">SAGE</text>
+</svg></div>
+<div class="status" id="status">Idle · 60%</div>
+<button class="net" id="net">Offline</button>
+<section class="panel" id="panel"><form id="form"><input id="message" autocomplete="off" placeholder="Talk to SAGE…"><button>Send</button></form><button class="close" id="close">Close</button></section>
+</main>
 <script>
-const sage=document.querySelector('#sage'),bubble=document.querySelector('#bubble'),panel=document.querySelector('#panel'),form=document.querySelector('#form'),input=document.querySelector('#message'),status=document.querySelector('#status'),net=document.querySelector('#net');let timer,hide;let active=false;
-function state(label,on){active=on;sage.classList.toggle('active',on);status.textContent=on?label:'Idle · 60%';clearTimeout(timer);if(on)timer=setTimeout(()=>state('Idle · 60%',false),5000)}
-function say(text){bubble.textContent=text;bubble.classList.add('show');clearTimeout(hide);hide=setTimeout(()=>bubble.classList.remove('show'),4200)}
+const sage=document.querySelector('#sage'),bubble=document.querySelector('#bubble'),panel=document.querySelector('#panel'),form=document.querySelector('#form'),input=document.querySelector('#message'),status=document.querySelector('#status'),net=document.querySelector('#net'),close=document.querySelector('#close');
+let active=false,timer,hide,dragging=false,dragStart=null;
+function state(label,on){active=on;sage.classList.toggle('active',on);status.textContent=on?label:'Idle · 60%';clearTimeout(timer);if(on)timer=setTimeout(()=>state('Idle · 60%',false),6000)}
+function say(text){bubble.textContent=text;bubble.classList.add('show');clearTimeout(hide);hide=setTimeout(()=>bubble.classList.remove('show'),4500)}
 function openPanel(){state('Ready · SAGE',true);panel.classList.add('show');input.focus();window.sageDesktop?.setInteractive(true)}
-sage.addEventListener('dblclick',openPanel);sage.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPanel()}});
+function closePanel(){panel.classList.remove('show');window.sageDesktop?.setInteractive(false);state('Idle · 60%',false)}
+sage.addEventListener('dblclick',openPanel);sage.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPanel()}});close.addEventListener('click',closePanel);
+sage.addEventListener('pointerdown',e=>{if(e.button!==0)return;dragging=true;dragStart={x:e.screenX,y:e.screenY};sage.setPointerCapture(e.pointerId);state('Moving · SAGE',true)});
+sage.addEventListener('pointermove',e=>{if(!dragging||!dragStart)return;const dx=e.screenX-dragStart.x,dy=e.screenY-dragStart.y;if(Math.abs(dx)+Math.abs(dy)<2)return;window.sageDesktop?.moveBy?.(dx,dy);dragStart={x:e.screenX,y:e.screenY}});
+sage.addEventListener('pointerup',e=>{dragging=false;dragStart=null;sage.releasePointerCapture?.(e.pointerId);state('Awake · SAGE',true)});
 form.addEventListener('submit',async e=>{e.preventDefault();const text=input.value.trim();if(!text)return;input.value='';state('Thinking · SAGE',true);say('Thinking…');const result=await window.sageDesktop?.ask(text);if(result?.ok){state('Speaking · SAGE',true);say(result.text);speak(result.text)}else say(result?.text||'I could not process that yet.')});
-function speak(text){if(!('speechSynthesis'in window))return;const u=new SpeechSynthesisUtterance(text);u.rate=.98;u.pitch=1.04;u.onstart=()=>state('Speaking · SAGE',true);u.onend=()=>state('Awake · SAGE',true);speechSynthesis.cancel();speechSynthesis.speak(u)}
-net.addEventListener('click',async()=>{const current=await window.sageDesktop?.network.get();const next=!(current??false);await window.sageDesktop?.network.set(next);net.textContent=next?'Online allowed':'Offline';net.classList.toggle('on',next)});
-window.addEventListener('mousemove',e=>{const r=sage.getBoundingClientRect();const x=Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/(r.width/2)));const y=Math.max(-1,Math.min(1,(e.clientY-(r.top+r.height*.3))/(r.height*.5)));document.querySelector('#eye1').style.transform=`translate(${x*2}px,${y*1.5}px)`;document.querySelector('#eye2').style.transform=`translate(${x*2}px,${y*1.5}px)`});
-state('Idle · 60%',false);
-</script></body></html>
+function speak(text){if(!('speechSynthesis'in window))return;const u=new SpeechSynthesisUtterance(text);u.rate=.98;u.pitch=1.12;u.onstart=()=>state('Speaking · SAGE',true);u.onend=()=>state('Awake · SAGE',true);speechSynthesis.cancel();speechSynthesis.speak(u)}
+net.addEventListener('click',async()=>{const current=await window.sageDesktop?.network.get();const next=!(current??false);await window.sageDesktop?.network.set(next);net.textContent=next?'Online allowed':'Offline';net.classList.toggle('on',next);say(next?'Online capabilities allowed.':'Offline mode enabled.')});
+window.addEventListener('mousemove',e=>{const r=sage.getBoundingClientRect();const x=Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/(r.width/2)));const y=Math.max(-1,Math.min(1,(e.clientY-(r.top+r.height*.3))/(r.height*.5)));document.querySelector('#eye1').style.transform=`translate(${x*3}px,${y*1.8}px)`;document.querySelector('#eye2').style.transform=`translate(${x*3}px,${y*1.8}px)`});
+state('Idle · 60%',false);window.sageDesktop?.setInteractive(false);
+</script>
+</body>
+</html>
