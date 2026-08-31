@@ -3,6 +3,8 @@ export type ToolRisk = 'safe' | 'requires-confirmation' | 'restricted';
 export interface ToolContext {
   readonly requestId: string;
   readonly timestampMs: number;
+  /** True only when the user explicitly approved this individual action. */
+  readonly confirmed?: boolean;
 }
 
 export interface ToolDefinition<TInput = unknown, TOutput = unknown> {
