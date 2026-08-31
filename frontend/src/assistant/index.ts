@@ -14,3 +14,7 @@ export { MemoryStore } from './MemoryStore.js';
 export type { MemoryEntry, MemoryKind, MemoryStoreOptions } from './MemoryStore.js';
 export { ContextManager } from './ContextManager.js';
 export type { ContextSnapshot } from './ContextManager.js';
+export { MemoryBackedAssistant } from './MemoryBackedAssistant.js';
+export type { MemoryBackedAssistantOptions } from './MemoryBackedAssistant.js';
+export { VolatileMemoryPersistence, hydrateMemoryStore } from './MemoryPersistence.js';
+export type { MemoryPersistence } from './MemoryPersistence.js';
