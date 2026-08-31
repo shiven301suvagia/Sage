@@ -10,3 +10,7 @@ export { InteractionPolicy } from './InteractionPolicy.js';
 export type { InteractionDecision, InteractionPolicyOptions } from './InteractionPolicy.js';
 export { createAssistantIntegration } from './AssistantIntegration.js';
 export type { AssistantIntegration } from './AssistantIntegration.js';
+export { MemoryStore } from './MemoryStore.js';
+export type { MemoryEntry, MemoryKind, MemoryStoreOptions } from './MemoryStore.js';
+export { ContextManager } from './ContextManager.js';
+export type { ContextSnapshot } from './ContextManager.js';
