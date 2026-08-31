@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('sageDesktop', Object.freeze({
   center: () => ipcRenderer.invoke('window:center'),
   toggleAlwaysOnTop: () => ipcRenderer.invoke('window:toggle-always-on-top'),
   move: (x, y) => ipcRenderer.invoke('window:move', x, y),
+  moveBy: (dx, dy) => ipcRenderer.invoke('window:move-by', dx, dy),
   setInteractive: (interactive) => ipcRenderer.invoke('window:set-interactive', interactive),
   network: {
     get: () => ipcRenderer.invoke('network:get'),
