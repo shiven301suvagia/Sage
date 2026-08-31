@@ -16,15 +16,30 @@ export class PluginLifecycle {
 
   async activate(plugin: SagePlugin): Promise<void> {
     if (this.active.has(plugin.id)) return;
-    for (const tool of plugin.tools) this.registry.register(tool);
-    await plugin.activate?.();
-    this.active.add(plugin.id);
+    if (!plugin.id.trim() || !plugin.version.trim()) throw new Error('Plugin id and version are required.');
+
+    const registered: string[] = [];
+    try {
+      for (const tool of plugin.tools) {
+        this.registry.register(tool);
+        registered.push(tool.id);
+      }
+      await plugin.activate?.();
+      this.active.add(plugin.id);
+    } catch (error) {
+      for (const toolId of registered) this.registry.unregister(toolId);
+      throw error;
+    }
   }
 
   async deactivate(plugin: SagePlugin): Promise<void> {
     if (!this.active.has(plugin.id)) return;
-    await plugin.deactivate?.();
-    this.active.delete(plugin.id);
+    try {
+      await plugin.deactivate?.();
+    } finally {
+      for (const tool of plugin.tools) this.registry.unregister(tool.id);
+      this.active.delete(plugin.id);
+    }
   }
 
   isActive(pluginId: string): boolean { return this.active.has(pluginId); }
