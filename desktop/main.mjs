@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow;
 let assistant;
+let networkAllowed = false;
 
 async function loadAssistant() {
   try {
@@ -79,13 +80,18 @@ app.whenReady().then(async () => {
     mainWindow.setPosition(nextX, nextY);
     return true;
   });
+  ipcMain.handle('network:get', () => networkAllowed);
+  ipcMain.handle('network:set', (_event, allowed) => {
+    networkAllowed = Boolean(allowed);
+    return networkAllowed;
+  });
   ipcMain.handle('assistant:message', (_event, rawText) => {
     if (typeof rawText !== 'string') return { ok: false, text: 'I could not read that message.' };
     const text = rawText.trim().slice(0, 4000);
     if (!text) return { ok: false, text: '' };
     const decision = assistant?.decide(text);
     if (!decision || decision.kind !== 'respond') return { ok: false, text: '' };
-    return { ok: true, text: decision.text };
+    return { ok: true, text: decision.text, networkAllowed };
   });
 });
 
