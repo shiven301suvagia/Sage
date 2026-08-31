@@ -4,3 +4,5 @@ export { EventBus } from './EventBus.js';
 export type { SageEvent, SageEventMap } from './EventBus.js';
 export { PermissionGate } from './PermissionGate.js';
 export type { Capability, PermissionDecision } from './PermissionGate.js';
+export { CharacterAssistantBridge } from './CharacterAssistantBridge.js';
+export type { CharacterAssistantBridgeOptions } from './CharacterAssistantBridge.js';
