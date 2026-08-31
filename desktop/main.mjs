@@ -19,24 +19,27 @@ async function loadAssistant() {
   }
 }
 
+function workArea() { return screen.getPrimaryDisplay().workArea; }
+
 function placeNearCorner() {
   if (!mainWindow) return;
-  const bounds = screen.getPrimaryDisplay().workArea;
+  const bounds = workArea();
   const [width, height] = mainWindow.getSize();
-  mainWindow.setPosition(bounds.x + bounds.width - width - 24, bounds.y + bounds.height - height - 24);
+  mainWindow.setPosition(bounds.x + bounds.width - width - 28, bounds.y + bounds.height - height - 28);
 }
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 280,
-    height: 330,
-    minWidth: 240,
-    minHeight: 280,
-    maxWidth: 360,
-    maxHeight: 440,
+    width: 240,
+    height: 360,
+    minWidth: 210,
+    minHeight: 300,
+    maxWidth: 300,
+    maxHeight: 430,
     frame: false,
     transparent: true,
-    resizable: true,
+    resizable: false,
+    movable: true,
     alwaysOnTop: true,
     skipTaskbar: true,
     hasShadow: false,
@@ -49,6 +52,7 @@ function createWindow() {
     },
   });
   mainWindow.setAlwaysOnTop(true, 'floating');
+  mainWindow.setMenuBarVisibility(false);
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.once('ready-to-show', placeNearCorner);
 }
@@ -73,12 +77,16 @@ app.whenReady().then(async () => {
   ipcMain.handle('window:center', placeNearCorner);
   ipcMain.handle('window:move', (_event, x, y) => {
     if (!mainWindow || !Number.isFinite(x) || !Number.isFinite(y)) return false;
-    const bounds = screen.getPrimaryDisplay().workArea;
+    const bounds = workArea();
     const [width, height] = mainWindow.getSize();
     const nextX = Math.max(bounds.x, Math.min(Math.round(x), bounds.x + bounds.width - width));
     const nextY = Math.max(bounds.y, Math.min(Math.round(y), bounds.y + bounds.height - height));
     mainWindow.setPosition(nextX, nextY);
     return true;
+  });
+  ipcMain.handle('window:set-interactive', (_event, interactive) => {
+    mainWindow?.setIgnoreMouseEvents(!Boolean(interactive), { forward: true });
+    return Boolean(interactive);
   });
   ipcMain.handle('network:get', () => networkAllowed);
   ipcMain.handle('network:set', (_event, allowed) => {
