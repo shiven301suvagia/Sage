@@ -1,16 +1,19 @@
 {
   "name": "sage",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
+  "main": "desktop/main.mjs",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "node --test dist/tests/**/*.test.js dist/frontend/src/**/*.test.js",
     "check": "npm run build && npm test",
+    "start": "electron .",
     "package": "node scripts/package-release.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",
+    "electron": "^37.2.6",
     "typescript": "^5.9.2"
   }
 }
