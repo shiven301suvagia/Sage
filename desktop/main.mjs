@@ -4,6 +4,22 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow;
+let assistant;
+
+async function loadAssistant() {
+  try {
+    const [{ EventBus }, { AssistantCore }] = await Promise.all([
+      import('../dist/frontend/src/assistant/EventBus.js'),
+      import('../dist/frontend/src/assistant/AssistantCore.js'),
+    ]);
+    const events = new EventBus();
+    assistant = new AssistantCore(events);
+    return true;
+  } catch {
+    assistant = undefined;
+    return false;
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -29,8 +45,10 @@ function createWindow() {
   mainWindow.setAlwaysOnTop(true, 'floating');
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await loadAssistant();
   createWindow();
+
   globalShortcut.register('CommandOrControl+Shift+S', () => {
     if (!mainWindow) return;
     if (mainWindow.isVisible()) mainWindow.hide(); else mainWindow.show();
@@ -50,6 +68,14 @@ app.whenReady().then(() => {
     const bounds = display.workArea;
     const [width, height] = mainWindow.getSize();
     mainWindow.setPosition(Math.round(bounds.x + bounds.width - width - 28), Math.round(bounds.y + bounds.height - height - 28));
+  });
+  ipcMain.handle('assistant:message', (_event, rawText) => {
+    if (typeof rawText !== 'string') return { ok: false, text: 'I could not read that message.' };
+    const text = rawText.trim().slice(0, 4000);
+    if (!text) return { ok: false, text: '' };
+    const decision = assistant?.decide(text);
+    if (!decision || decision.kind !== 'respond') return { ok: false, text: '' };
+    return { ok: true, text: decision.text };
   });
 });
 
