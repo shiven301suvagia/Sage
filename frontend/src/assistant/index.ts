@@ -6,3 +6,5 @@ export { PermissionGate } from './PermissionGate.js';
 export type { Capability, PermissionDecision } from './PermissionGate.js';
 export { CharacterAssistantBridge } from './CharacterAssistantBridge.js';
 export type { CharacterAssistantBridgeOptions } from './CharacterAssistantBridge.js';
+export { InteractionPolicy } from './InteractionPolicy.js';
+export type { InteractionDecision, InteractionPolicyOptions } from './InteractionPolicy.js';
