@@ -9,7 +9,7 @@ export type SageEvent<T extends keyof SageEventMap = keyof SageEventMap> = {
   readonly payload: SageEventMap[T];
 };
 
-type Handler<T> = (event: SageEvent<T>) => void;
+type Handler<T extends keyof SageEventMap> = (event: SageEvent<T>) => void;
 
 export class EventBus {
   private readonly handlers = new Map<keyof SageEventMap, Set<Handler<any>>>();
@@ -18,10 +18,21 @@ export class EventBus {
     const listeners = this.handlers.get(type) ?? new Set<Handler<any>>();
     listeners.add(handler);
     this.handlers.set(type, listeners);
-    return () => listeners.delete(handler);
+    return () => {
+      listeners.delete(handler);
+      if (listeners.size === 0) this.handlers.delete(type);
+    };
   }
 
   emit<T extends keyof SageEventMap>(event: SageEvent<T>): void {
-    this.handlers.get(event.type)?.forEach((handler) => handler(event));
+    const listeners = this.handlers.get(event.type);
+    if (!listeners) return;
+    for (const handler of [...listeners]) {
+      try {
+        handler(event);
+      } catch {
+        // Isolate subscribers so one faulty listener cannot break the event pipeline.
+      }
+    }
   }
 }
