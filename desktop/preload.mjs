@@ -5,4 +5,5 @@ contextBridge.exposeInMainWorld('sageDesktop', Object.freeze({
   close: () => ipcRenderer.invoke('window:close'),
   center: () => ipcRenderer.invoke('window:center'),
   toggleAlwaysOnTop: () => ipcRenderer.invoke('window:toggle-always-on-top'),
+  ask: (text) => ipcRenderer.invoke('assistant:message', text),
 }));
