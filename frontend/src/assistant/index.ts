@@ -1,0 +1,6 @@
+export { AssistantCore } from './AssistantCore.js';
+export type { AssistantDecision, AssistantCoreOptions } from './AssistantCore.js';
+export { EventBus } from './EventBus.js';
+export type { SageEvent, SageEventMap } from './EventBus.js';
+export { PermissionGate } from './PermissionGate.js';
+export type { Capability, PermissionDecision } from './PermissionGate.js';
