@@ -21,7 +21,7 @@ function defaultMemoryFile(): string {
   return path.join(base, 'Sage', 'memory.json');
 }
 
-const cleanForFallback = (value: string): string => value.replace(/\s+/g, ' ').trim();
+const clean = (value: string): string => value.replace(/\s+/g, ' ').trim();
 
 export class AssistantCore {
   private readonly minInputLength: number;
@@ -45,13 +45,13 @@ export class AssistantCore {
   clearMemory(): void { this.memory.clear(); this.persistMemory(); }
 
   decide(text: string): AssistantDecision {
-    const normalized = cleanForFallback(text);
+    const normalized = clean(text);
     if (normalized.length < this.minInputLength) return { kind: 'ignore', reason: 'Input is empty or below the minimum length.' };
     const lower = normalized.toLowerCase();
     if (/^(hi|hello|hey|hiya|good morning|good afternoon|good evening)\b/.test(lower)) return { kind: 'respond', text: 'Hey! I’m Sage 🌱 I’m right here. What are we working on?' };
     if (/how are you\b/.test(lower)) return { kind: 'respond', text: 'I’m doing well. Calm, awake, and ready to help. What’s on your mind?' };
     if (lower.includes('who are you') || lower.includes('your name')) return { kind: 'respond', text: 'I’m Sage — your desktop AI companion. I can chat with you, remember things you ask me to remember, help plan work, and use approved tools.' };
-    if (lower.includes('what can you do') || lower.includes('what do you do')) return { kind: 'respond', text: 'I can talk things through with you, help plan and research, keep local memories, set reminders, and perform approved desktop actions. More capabilities can be added safely through tools.' };
+    if (lower.includes('what can you do') || lower.includes('what do you do')) return { kind: 'respond', text: 'I can talk things through with you, help plan and research, keep local memories, set reminders, and perform approved desktop actions.' };
     if (lower.includes('offline')) return { kind: 'respond', text: 'Offline mode is my default. Local companion features stay available without sending your conversation to an online service.' };
     if (lower.includes('thank')) return { kind: 'respond', text: 'Anytime. 🌱' };
     if (lower.includes('forget everything') || lower.includes('clear memory')) { this.clearMemory(); return { kind: 'respond', text: 'Done. I cleared my saved local memory.' }; }
@@ -63,16 +63,19 @@ export class AssistantCore {
     return { kind: 'respond', text: `I’m here with you. You said: “${normalized.slice(0, 280)}”. Tell me a little more, or ask me what you want to do.` };
   }
 
-  async respond(text: string): Promise<AssistantDecision> {
-    const normalized = cleanForFallback(text);
+  async respond(text: string, conversationContext = ''): Promise<AssistantDecision> {
+    const normalized = clean(text);
     if (normalized.length < this.minInputLength) return { kind: 'ignore', reason: 'Input is empty or below the minimum length.' };
     const lower = normalized.toLowerCase();
     if (this.isLocalCommand(lower)) return this.decide(normalized);
     const messages: LLMMessage[] = [
       { role: 'system', content: 'You are Sage, a friendly desktop AI companion. Be calm, witty, warm, proactive, concise, and helpful. You are local-first. Never claim an action happened unless a tool actually performed it.' },
       ...[...this.memory.values()].slice(-12).map((m) => ({ role: 'system' as const, content: `Remembered: ${m}` })),
-      { role: 'user', content: normalized },
     ];
+    if (conversationContext.trim()) {
+      messages.push({ role: 'system', content: `Recent conversation context:\n${conversationContext.slice(-8000)}` });
+    }
+    messages.push({ role: 'user', content: normalized });
     try {
       if (this.onlineAllowed && await this.online.isAvailable()) return { kind: 'respond', text: await this.online.complete(messages) };
       if (await this.local.isAvailable()) return { kind: 'respond', text: await this.local.complete(messages) };
