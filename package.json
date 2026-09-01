@@ -11,9 +11,12 @@
     "start": "npm run build && electron .",
     "package": "npm run build && node scripts/package-release.mjs"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "devDependencies": {
     "@types/node": "^22.15.29",
-    "electron": "^37.2.6",
+    "electron": "37.10.3",
     "typescript": "^5.9.2"
   }
 }
