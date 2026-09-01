@@ -184,4 +184,4 @@ Character animation runs independently from assistant request processing. Expens
 Development: TypeScript build + Electron desktop runtime.  
 Production target: signed, reproducible desktop package with versioned migrations and release checks.
 
-The repository's current roadmap explicitly prioritizes foundation, core desktop experience, assistant core, extensibility, and production hardening. This architecture preserves that progression. fileciteturn605file0
+The architecture is aligned with the repository roadmap: foundation, core desktop experience, assistant core, extensibility, and production hardening.
