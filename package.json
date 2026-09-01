@@ -1,22 +1,18 @@
 {
   "name": "sage",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "private": true,
+  "description": "SAGE — a local-first desktop AI companion",
   "type": "module",
-  "main": "desktop/main.mjs",
-  "engines": {
-    "node": ">=22"
-  },
+  "main": "app/main.mjs",
+  "engines": { "node": ">=22" },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "node --test dist/tests/**/*.test.js dist/frontend/src/**/*.test.js",
-    "check": "npm run build && npm test",
-    "start": "npm run build && electron .",
-    "package": "npm run build && node scripts/package-release.mjs"
+    "start": "electron .",
+    "check": "node --test tests/smoke.test.mjs",
+    "package": "electron-builder"
   },
   "devDependencies": {
-    "@types/node": "^22.15.29",
     "electron": "37.10.3",
-    "typescript": "^5.9.2"
+    "electron-builder": "^26.0.12"
   }
 }
