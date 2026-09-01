@@ -21,6 +21,8 @@ function defaultMemoryFile(): string {
   return path.join(base, 'Sage', 'memory.json');
 }
 
+const cleanForFallback = (value: string): string => value.replace(/\s+/g, ' ').trim();
+
 export class AssistantCore {
   private readonly minInputLength: number;
   private readonly memory = new Map<string, string>();
@@ -39,43 +41,54 @@ export class AssistantCore {
   }
 
   setOnlineAllowed(allowed: boolean): void { this.onlineAllowed = Boolean(allowed); }
-
   listMemory(): readonly string[] { return [...this.memory.values()]; }
-
   clearMemory(): void { this.memory.clear(); this.persistMemory(); }
 
   decide(text: string): AssistantDecision {
-    const normalized = text.trim();
+    const normalized = cleanForFallback(text);
     if (normalized.length < this.minInputLength) return { kind: 'ignore', reason: 'Input is empty or below the minimum length.' };
     const lower = normalized.toLowerCase();
-    if (/^(hi|hello|hey|hiya)\b/.test(lower)) return { kind: 'respond', text: 'Hey. I’m Sage. I’m right here. What are we working on?' };
-    if (lower.includes('who are you') || lower.includes('your name')) return { kind: 'respond', text: 'I’m Sage — your local desktop companion. I can stay with you offline, and online access can be enabled when you choose.' };
-    if (lower.includes('offline')) return { kind: 'respond', text: 'Offline mode is my default. I can keep my local companion features running without the internet.' };
+    if (/^(hi|hello|hey|hiya|good morning|good afternoon|good evening)\b/.test(lower)) return { kind: 'respond', text: 'Hey! I’m Sage 🌱 I’m right here. What are we working on?' };
+    if (/how are you\b/.test(lower)) return { kind: 'respond', text: 'I’m doing well. Calm, awake, and ready to help. What’s on your mind?' };
+    if (lower.includes('who are you') || lower.includes('your name')) return { kind: 'respond', text: 'I’m Sage — your desktop AI companion. I can chat with you, remember things you ask me to remember, help plan work, and use approved tools.' };
+    if (lower.includes('what can you do') || lower.includes('what do you do')) return { kind: 'respond', text: 'I can talk things through with you, help plan and research, keep local memories, set reminders, and perform approved desktop actions. More capabilities can be added safely through tools.' };
+    if (lower.includes('offline')) return { kind: 'respond', text: 'Offline mode is my default. Local companion features stay available without sending your conversation to an online service.' };
+    if (lower.includes('thank')) return { kind: 'respond', text: 'Anytime. 🌱' };
     if (lower.includes('forget everything') || lower.includes('clear memory')) { this.clearMemory(); return { kind: 'respond', text: 'Done. I cleared my saved local memory.' }; }
     if (lower.includes('what do you remember') || lower.includes('show memory')) { const memories = this.listMemory(); return { kind: 'respond', text: memories.length ? `I remember: ${memories.join('; ')}` : 'I don’t have anything saved yet.' }; }
-    if (lower.includes('remember ') || lower.includes('remember that ')) {
-      const value = normalized.replace(/^.*?remember(?: that)?\s+/i, '').trim();
+    if (/\bremember(?: that)?\s+/i.test(normalized)) {
+      const value = normalized.replace(/^.*?\bremember(?: that)?\s+/i, '').trim();
       if (value) { this.memory.set(`memory-${Date.now()}`, value); this.persistMemory(); return { kind: 'respond', text: 'Got it. I’ll keep that in my local memory.' }; }
     }
-    if (lower.includes('thank')) return { kind: 'respond', text: 'Anytime. 🌱' };
-    return { kind: 'respond', text: 'I’m listening. Tell me what you want to work on.' };
+    return { kind: 'respond', text: `I’m here with you. You said: “${normalized.slice(0, 280)}”. Tell me a little more, or ask me what you want to do.` };
   }
 
   async respond(text: string): Promise<AssistantDecision> {
-    const normalized = text.trim();
+    const normalized = cleanForFallback(text);
     if (normalized.length < this.minInputLength) return { kind: 'ignore', reason: 'Input is empty or below the minimum length.' };
     const lower = normalized.toLowerCase();
-    if (lower.includes('remember ') || lower.includes('remember that ') || lower.includes('clear memory') || lower.includes('forget everything') || lower.includes('what do you remember') || lower.includes('show memory')) return this.decide(normalized);
+    if (this.isLocalCommand(lower)) return this.decide(normalized);
     const messages: LLMMessage[] = [
-      { role: 'system', content: 'You are Sage, a friendly desktop AI companion. Be calm, witty, proactive, concise, and helpful. You are local-first. Never claim an action happened unless a tool actually performed it.' },
+      { role: 'system', content: 'You are Sage, a friendly desktop AI companion. Be calm, witty, warm, proactive, concise, and helpful. You are local-first. Never claim an action happened unless a tool actually performed it.' },
       ...[...this.memory.values()].slice(-12).map((m) => ({ role: 'system' as const, content: `Remembered: ${m}` })),
       { role: 'user', content: normalized },
     ];
     try {
       if (this.onlineAllowed && await this.online.isAvailable()) return { kind: 'respond', text: await this.online.complete(messages) };
       if (await this.local.isAvailable()) return { kind: 'respond', text: await this.local.complete(messages) };
-    } catch { /* graceful fallback */ }
+    } catch { /* provider failure is intentionally non-fatal */ }
     return this.decide(normalized);
+  }
+
+  private isLocalCommand(lower: string): boolean {
+    return /^(hi|hello|hey|hiya|good morning|good afternoon|good evening)\b/.test(lower)
+      || /how are you\b/.test(lower)
+      || lower.includes('who are you') || lower.includes('your name')
+      || lower.includes('what can you do') || lower.includes('what do you do')
+      || lower.includes('offline') || lower.includes('thank')
+      || lower.includes('forget everything') || lower.includes('clear memory')
+      || lower.includes('what do you remember') || lower.includes('show memory')
+      || /\bremember(?: that)?\s+/.test(lower);
   }
 
   private loadMemory(): void {
