@@ -28,6 +28,17 @@ function placeNearCorner() {
   mainWindow.setPosition(bounds.x + bounds.width - width - 28, bounds.y + bounds.height - height - 28);
 }
 
+function moveBy(dx, dy) {
+  if (!mainWindow || !Number.isFinite(dx) || !Number.isFinite(dy)) return false;
+  const bounds = workArea();
+  const [x, y] = mainWindow.getPosition();
+  const [width, height] = mainWindow.getSize();
+  const nextX = Math.max(bounds.x, Math.min(Math.round(x + dx), bounds.x + bounds.width - width));
+  const nextY = Math.max(bounds.y, Math.min(Math.round(y + dy), bounds.y + bounds.height - height));
+  mainWindow.setPosition(nextX, nextY);
+  return true;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 240,
@@ -84,16 +95,7 @@ app.whenReady().then(async () => {
     mainWindow.setPosition(nextX, nextY);
     return true;
   });
-  ipcMain.handle('window:move-by', (_event, dx, dy) => {
-    if (!mainWindow || !Number.isFinite(dx) || !Number.isFinite(dy)) return false;
-    const [x, y] = mainWindow.getPosition();
-    const bounds = workArea();
-    const [width, height] = mainWindow.getSize();
-    const nextX = Math.max(bounds.x, Math.min(Math.round(x + dx), bounds.x + bounds.width - width));
-    const nextY = Math.max(bounds.y, Math.min(Math.round(y + dy), bounds.y + bounds.height - height));
-    mainWindow.setPosition(nextX, nextY);
-    return true;
-  });
+  ipcMain.handle('window:move-by', (_event, dx, dy) => moveBy(Number(dx), Number(dy)));
   ipcMain.handle('window:set-interactive', (_event, interactive) => {
     mainWindow?.setIgnoreMouseEvents(!Boolean(interactive), { forward: true });
     return Boolean(interactive);
