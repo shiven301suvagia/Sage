@@ -27,7 +27,6 @@ async function loadAssistant() {
     conversation = undefined;
   }
 }
-
 function workArea() { return screen.getPrimaryDisplay().workArea; }
 function placeNearCorner() {
   if (!mainWindow) return;
@@ -43,7 +42,6 @@ function moveBy(dx, dy) {
   mainWindow.setPosition(Math.max(bounds.x, Math.min(Math.round(x + dx), bounds.x + bounds.width - width)), Math.max(bounds.y, Math.min(Math.round(y + dy), bounds.y + bounds.height - height)));
   return true;
 }
-
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 220, height: 330, minWidth: 190, minHeight: 270, maxWidth: 280, maxHeight: 400,
@@ -53,10 +51,10 @@ function createWindow() {
   });
   mainWindow.setAlwaysOnTop(true, 'floating');
   mainWindow.setMenuBarVisibility(false);
+  mainWindow.setIgnoreMouseEvents(false);
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.once('ready-to-show', placeNearCorner);
 }
-
 app.whenReady().then(async () => {
   await loadAssistant();
   const memoryDir = path.join(app.getPath('userData'), 'Sage');
@@ -84,19 +82,16 @@ app.whenReady().then(async () => {
     if (typeof rawText !== 'string') return { ok: false, text: 'I could not read that message.' };
     const text = rawText.trim().slice(0, 4000);
     if (!text) return { ok: false, text: '' };
-
     const relative = parseRelativeReminder(text);
     if (relative) {
       const reminder = reminders.add(relative.text, relative.atMs);
       return { ok: true, text: `Done. I’ll remind you in ${text.match(/^remind me in\s+\d+\s*\w+/i)?.[0].replace(/^remind me in\s+/i, '') ?? 'a little while'}.`, reminder, networkAllowed };
     }
-
     const action = actions?.match(text);
     if (action) {
       const result = await actions.execute(action.id);
       return { ok: result.ok, text: result.message, action: action.id, networkAllowed };
     }
-
     if (!assistant) return { ok: false, text: 'SAGE is still starting. Please try again in a moment.' };
     conversation?.add('user', text);
     const context = conversation?.context() ?? '';
@@ -106,6 +101,5 @@ app.whenReady().then(async () => {
     return { ok: true, text: decision.text, networkAllowed };
   });
 });
-
 app.on('will-quit', () => { globalShortcut.unregisterAll(); reminders?.dispose(); });
 app.on('window-all-closed', event => event.preventDefault());
