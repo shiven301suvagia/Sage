@@ -2,23 +2,29 @@ import { app, BrowserWindow, globalShortcut, ipcMain, Notification, screen } fro
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ReminderService, parseRelativeReminder } from './ReminderService.mjs';
+import { SafeActions } from './SafeActions.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow;
 let assistant;
 let reminders;
+let actions;
+let conversation;
 let networkAllowed = false;
 
 async function loadAssistant() {
   try {
-    const [{ EventBus }, { AssistantCore }] = await Promise.all([
+    const [{ EventBus }, { AssistantCore }, { ConversationSession }] = await Promise.all([
       import('../dist/frontend/src/assistant/EventBus.js'),
       import('../dist/frontend/src/assistant/AssistantCore.js'),
+      import('../dist/frontend/src/assistant/ConversationSession.js'),
     ]);
     assistant = new AssistantCore(new EventBus());
+    conversation = new ConversationSession(12);
     assistant.setOnlineAllowed(networkAllowed);
   } catch {
     assistant = undefined;
+    conversation = undefined;
   }
 }
 
@@ -54,6 +60,7 @@ function createWindow() {
 app.whenReady().then(async () => {
   await loadAssistant();
   const memoryDir = path.join(app.getPath('userData'), 'Sage');
+  actions = new SafeActions({ rootPath: app.getAppPath() });
   reminders = new ReminderService(path.join(memoryDir, 'reminders.json'), (item) => {
     if (Notification.isSupported()) new Notification({ title: 'SAGE reminder', body: item.text }).show();
     mainWindow?.webContents.send('reminder:fired', { id: item.id, text: item.text, atMs: item.atMs });
@@ -77,11 +84,25 @@ app.whenReady().then(async () => {
     if (typeof rawText !== 'string') return { ok: false, text: 'I could not read that message.' };
     const text = rawText.trim().slice(0, 4000);
     if (!text) return { ok: false, text: '' };
+
     const relative = parseRelativeReminder(text);
-    if (relative) { const reminder = reminders.add(relative.text, relative.atMs); return { ok: true, text: `Done. I’ll remind you in ${text.match(/^remind me in\s+\d+\s*\w+/i)?.[0].replace(/^remind me in\s+/i, '') ?? 'a little while'}.`, reminder, networkAllowed }; }
+    if (relative) {
+      const reminder = reminders.add(relative.text, relative.atMs);
+      return { ok: true, text: `Done. I’ll remind you in ${text.match(/^remind me in\s+\d+\s*\w+/i)?.[0].replace(/^remind me in\s+/i, '') ?? 'a little while'}.`, reminder, networkAllowed };
+    }
+
+    const action = actions?.match(text);
+    if (action) {
+      const result = await actions.execute(action.id);
+      return { ok: result.ok, text: result.message, action: action.id, networkAllowed };
+    }
+
     if (!assistant) return { ok: false, text: 'SAGE is still starting. Please try again in a moment.' };
-    const decision = await assistant.respond(text);
+    conversation?.add('user', text);
+    const context = conversation?.context() ?? '';
+    const decision = await assistant.respond(context ? `Use this recent conversation for context. Respond naturally to the latest user message.\n${context}` : text);
     if (decision.kind !== 'respond') return { ok: false, text: '' };
+    conversation?.add('assistant', decision.text);
     return { ok: true, text: decision.text, networkAllowed };
   });
 });
