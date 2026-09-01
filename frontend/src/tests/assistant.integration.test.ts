@@ -8,11 +8,20 @@ import { CharacterRuntime } from '../rendering/CharacterRuntime.js';
 
 test('assistant response wakes the character and schedules sleep', async () => {
   const events = new EventBus();
-  const assistant = new AssistantCore(events);
+  const immediateProvider = {
+    name: 'test-local',
+    isAvailable: () => true,
+    complete: async () => 'Hey. I’m Sage. I’m right here. What are we working on?',
+  };
+  const assistant = new AssistantCore(events, {
+    localProvider: immediateProvider,
+    onlineProvider: immediateProvider,
+  });
   const runtime = new CharacterRuntime({ seed: 1 });
   const bridge = new CharacterAssistantBridge(events, runtime, assistant, { responseHoldMs: 5, now: () => 1000 });
 
   events.emit({ type: 'user.input', payload: { text: 'hello', timestampMs: 1000 } });
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
   assert.equal(runtime.currentState, 'Waking');
 
   await new Promise((resolve) => setTimeout(resolve, 15));
