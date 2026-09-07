@@ -1,0 +1,41 @@
+const EVENT_NAMES=Object.freeze({start:'start',end:'end',result:'result',error:'error'});
+
+export class VoiceController{
+ constructor({SpeechRecognitionImpl=null,language='en-IN',continuous=false,interimResults=true,maxAlternatives=1}={}){
+  this.SpeechRecognitionImpl=SpeechRecognitionImpl;
+  this.language=language;
+  this.continuous=continuous;
+  this.interimResults=interimResults;
+  this.maxAlternatives=maxAlternatives;
+  this.active=false;
+  this.listeners=new Map(Object.values(EVENT_NAMES).map(name=>[name,new Set()]));
+  this.recognition=null;
+ }
+ supported(){return Boolean(this.SpeechRecognitionImpl);}
+ on(event,listener){this.listeners.get(event)?.add(listener);return()=>this.listeners.get(event)?.delete(listener);}
+ start(){
+  if(!this.supported())throw Object.assign(new Error('Voice input is not available in this desktop session.'),{code:'VOICE_UNAVAILABLE'});
+  if(this.active)return false;
+  const recognition=new this.SpeechRecognitionImpl();
+  recognition.lang=this.language;
+  recognition.continuous=this.continuous;
+  recognition.interimResults=this.interimResults;
+  recognition.maxAlternatives=this.maxAlternatives;
+  recognition.onstart=()=>{this.active=true;this.#emit(EVENT_NAMES.start,{active:true});};
+  recognition.onend=()=>{this.active=false;this.#emit(EVENT_NAMES.end,{active:false});};
+  recognition.onerror=event=>this.#emit(EVENT_NAMES.error,{code:event?.error||'VOICE_ERROR',message:this.#errorMessage(event?.error)});
+  recognition.onresult=event=>{
+   let transcript='';
+   for(let i=event.resultIndex??0;i<(event.results?.length||0);i+=1){transcript+=event.results[i]?.[0]?.transcript||'';}
+   transcript=transcript.trim();
+   if(transcript)this.#emit(EVENT_NAMES.result,{text:transcript,final:Boolean(event.results[event.results.length-1]?.isFinal)});
+  };
+  this.recognition=recognition;
+  try{recognition.start();return true;}catch(error){this.recognition=null;throw error;}
+ }
+ stop(){if(!this.recognition)return false;try{this.recognition.stop();}finally{this.recognition=null;this.active=false;}return true;}
+ #emit(event,data){for(const listener of this.listeners.get(event)||[]){try{listener(data);}catch(error){console.error('[SAGE] voice listener error',error);}}}
+ #errorMessage(code){const map={not-allowed:'Microphone permission was denied.',service-not-allowed:'Voice recognition service is not allowed.',audio-capture:'No microphone could be accessed.',no-speech:'I didn’t hear anything.',network:'Voice recognition needs a speech service that is unavailable.'};return map[code]||'Voice input could not be started.';}
+}
+
+export const VOICE_EVENTS=EVENT_NAMES;
