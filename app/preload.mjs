@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld('sage',Object.freeze({
  memory:Object.freeze({list:()=>ipcRenderer.invoke('memory:list'),search:q=>ipcRenderer.invoke('memory:search',String(q)),clear:()=>ipcRenderer.invoke('memory:clear')}),
  reminder:Object.freeze({list:()=>ipcRenderer.invoke('reminder:list'),onDue:fn=>ipcRenderer.on('reminder:due',(_e,data)=>fn(data))}),
  network:Object.freeze({get:()=>ipcRenderer.invoke('network:get'),set:v=>ipcRenderer.invoke('network:set',Boolean(v))}),
- voice:Object.freeze({canUse:()=>ipcRenderer.invoke('voice:can-use')}),
+ voice:Object.freeze({canUse:()=>ipcRenderer.invoke('voice:can-use'),getPreference:()=>ipcRenderer.invoke('voice:get-preference'),setPreference:v=>ipcRenderer.invoke('voice:set-preference',Boolean(v))}),
  experience:Object.freeze({get:()=>ipcRenderer.invoke('experience:get')}),
  proactive:Object.freeze({get:()=>ipcRenderer.invoke('proactive:get'),set:v=>ipcRenderer.invoke('proactive:set',Boolean(v)),onSuggestion:fn=>ipcRenderer.on('proactive:suggestion',(_e,data)=>fn(data))})
 }));
