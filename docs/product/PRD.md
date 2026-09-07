@@ -189,7 +189,7 @@ SAGE must never treat convenience as permission. Destructive, public, financial,
 
 - Fast startup after dependency initialization.
 - Character animation should remain smooth without monopolizing CPU/GPU.
-- UI interactions should feel immediate under normal desktop load.
+- UI interactions should feel immediate under normal workload.
 - Background polling must be bounded and pausable.
 - Memory retrieval must be bounded by configured limits.
 
