@@ -1,0 +1,15 @@
+{
+  "name": "sage-desktop-companion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SAGE — a local-first desktop AI companion.",
+  "type": "module",
+  "main": "app/main.mjs",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "check": "node --check app/main.mjs && node --check app/preload.mjs && node --check app/core/runtime.mjs && node --check app/core/memory.mjs && node --check app/core/policy.mjs && node --check app/core/assistant.mjs && node --check app/renderer/app.mjs && npm test"
+  },
+  "devDependencies": { "electron": "37.10.3" }
+}
