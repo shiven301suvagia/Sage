@@ -8,10 +8,10 @@ export class AssistantCore{
   const text=String(input??'').trim();
   if(!text)return{kind:'respond',text:'I’m listening. Say something whenever you’re ready.',state:'speaking'};
   if(GREETINGS.test(text))return{kind:'respond',text:'Hey. I’m Sage. I’m right here. ✨',state:'speaking'};
-  const lower=text.toLowerCase();
   if(/\bwhat do you remember\b|\bmy memories\b/i.test(text)){const memories=this.memory.snapshot().slice(0,8);return{kind:'respond',text:memories.length?`I remember: ${memories.map(m=>m.text).join('; ')}`:'Nothing saved yet. We can build that together.',state:'speaking'};}
   if(/\b(network|online|internet)\b/i.test(text))return{kind:'respond',text:this.policy.networkAllowed?'Online access is currently allowed.':'I’m in offline mode. Online access is currently disabled.',state:'speaking'};
   const intent=this.planner.plan(text);
+  if(intent.type==='reminder.create'&&!intent.args.when)return{kind:'respond',text:'Absolutely. What time should I remind you? You can say “10 minutes” or “6:30 pm”.',state:'speaking'};
   if(intent.type!=='conversation'&&this.tools){
    if(intent.type==='memory.remember'){await this.tools.execute(intent.type,intent.args,true);return{kind:'respond',text:'Got it. I’ll keep that in my local memory.',state:'speaking',tool:intent.type};}
    const prepared=this.tools.prepare(intent.type,intent.args,false);
@@ -24,5 +24,5 @@ export class AssistantCore{
  async confirm(action){if(!action?.tool)throw new Error('Invalid confirmation.');const result=await this.tools.execute(action.tool,action.args||{},true);return{kind:'respond',text:confirmationResult(action.tool,result),state:'speaking',tool:action.tool};}
  #rememberTurn(user,assistant){this.history.push({role:'user',content:user},{role:'assistant',content:assistant});if(this.history.length>this.historyLimit)this.history.splice(0,this.history.length-this.historyLimit);}
 }
-function summaryFor(i){if(i.type==='reminder.create')return`Create a reminder: “${i.args.text}”${i.args.when?` (${i.args.when})`:''}`;if(i.type==='open.url')return`Open ${i.args.url} in your browser`;if(i.type==='memory.clear')return'Delete all saved local memories';return`Run ${i.type}`;}
+function summaryFor(i){if(i.type==='reminder.create')return`Create a reminder: “${i.args.text}” (${i.args.when})`;if(i.type==='open.url')return`Open ${i.args.url} in your browser`;if(i.type==='memory.clear')return'Delete all saved local memories';return`Run ${i.type}`;}
 function confirmationResult(tool,result){if(tool==='reminder.create')return`Done. I’ll remind you about “${result.text}”.`;if(tool==='open.url')return'I’ve opened that in your default browser.';if(tool==='memory.clear')return'Your local memories have been cleared.';return'Done.';}
