@@ -11,5 +11,5 @@
     "test": "node --test",
     "check": "node --check app/main.mjs && node --check app/preload.mjs && node --check app/core/runtime.mjs && node --check app/core/memory.mjs && node --check app/core/policy.mjs && node --check app/core/assistant.mjs && node --check app/core/model.mjs && node --check app/core/reminders.mjs && node --check app/core/experience.mjs && node --check app/core/proactive.mjs && node --check app/core/voice.mjs && node --check app/renderer/app.mjs && npm test"
   },
-  "devDependencies": { "electron": "37.10.3" }
+  "devDependencies": { "electron": "42.11.2" }
 }

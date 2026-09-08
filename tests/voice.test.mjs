@@ -7,7 +7,6 @@ class FakeRecognition{
  constructor(){FakeRecognition.instance=this;this.started=false;this.stopped=false;}
  start(){this.started=true;queueMicrotask(()=>this.onstart?.());}
  stop(){this.stopped=true;queueMicrotask(()=>this.onend?.());}
- emitResult(text,isFinal=true){this.onresult?.({resultIndex:0,results:[[{transcript:text}],Object.assign([], {isFinal})]});}
 }
 
 test('voice controller rejects unsupported input',()=>{
@@ -27,4 +26,13 @@ test('voice controller forwards final transcripts',async()=>{
  assert.equal(result.text,'hello Sage');
  assert.equal(result.final,true);
  voice.stop();
+});
+
+test('voice controller maps dashed recognition error codes',()=>{
+ const voice=new VoiceController({SpeechRecognitionImpl:FakeRecognition});
+ let error=null;
+ voice.on('error',data=>{error=data;});
+ voice.start();
+ FakeRecognition.instance.onerror?.({error:'not-allowed'});
+ assert.equal(error.message,'Microphone permission was denied.');
 });
