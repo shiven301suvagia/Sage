@@ -4,7 +4,8 @@ export const TOOL_DEFINITIONS=Object.freeze([
  {name:'memory.remember',description:'Save a user-approved fact in local memory.',risk:TOOL_RISK.write,network:false},
  {name:'memory.clear',description:'Delete all local memories.',risk:TOOL_RISK.destructive,network:false},
  {name:'reminder.create',description:'Create a local desktop reminder.',risk:TOOL_RISK.write,network:false},
- {name:'open.url',description:'Open a URL in the default browser.',risk:TOOL_RISK.external,network:true}
+ {name:'open.url',description:'Open a URL in the default browser.',risk:TOOL_RISK.external,network:true},
+ {name:'system.info',description:'Read basic local SAGE system information.',risk:TOOL_RISK.read,network:false}
 ]);
 
 export class ToolRegistry{
