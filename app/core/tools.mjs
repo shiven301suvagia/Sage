@@ -1,12 +1,12 @@
 import{TOOL_RISK}from'./policy.mjs';
-
 export const TOOL_DEFINITIONS=Object.freeze([
  {name:'memory.remember',description:'Save a user-approved fact in local memory.',risk:TOOL_RISK.write,network:false},
  {name:'memory.clear',description:'Delete all local memories.',risk:TOOL_RISK.destructive,network:false},
  {name:'reminder.create',description:'Create a local desktop reminder.',risk:TOOL_RISK.write,network:false},
- {name:'open.url',description:'Open a URL in the default browser.',risk:TOOL_RISK.external,network:true}
+ {name:'open.url',description:'Open a URL in the default browser.',risk:TOOL_RISK.external,network:true},
+ {name:'system.info',description:'Read basic local SAGE system information.',risk:TOOL_RISK.read,network:false},
+ {name:'system.context',description:'Read SAGE local desktop context.',risk:TOOL_RISK.read,network:false}
 ]);
-
 export class ToolRegistry{
  constructor({policy,handlers={}}={}){this.policy=policy;this.handlers=handlers;this.tools=new Map(TOOL_DEFINITIONS.map(t=>[t.name,t]));}
  describe(name){return this.tools.get(name)||null;}
