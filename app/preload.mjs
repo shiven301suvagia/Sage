@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('sage',Object.freeze({
  voice:Object.freeze({canUse:()=>ipcRenderer.invoke('voice:can-use'),getPreference:()=>ipcRenderer.invoke('voice:get-preference'),setPreference:v=>ipcRenderer.invoke('voice:set-preference',Boolean(v))}),
  experience:Object.freeze({get:()=>ipcRenderer.invoke('experience:get')}),
  proactive:Object.freeze({get:()=>ipcRenderer.invoke('proactive:get'),set:v=>ipcRenderer.invoke('proactive:set',Boolean(v)),onSuggestion:fn=>ipcRenderer.on('proactive:suggestion',(_e,data)=>fn(data))}),
- plugins:Object.freeze({list:()=>ipcRenderer.invoke('plugin:list')})
+ plugins:Object.freeze({list:()=>ipcRenderer.invoke('plugin:list')}),
+ context:Object.freeze({get:()=>ipcRenderer.invoke('context:get')})
 }));
