@@ -25,6 +25,7 @@ test('Stage 10 uses the real runtime graph for reminder emotion',async()=>{
 test('Stage 10 can transition speaking to the focused working state',async()=>{
   const states=[];
   const runtime=new CharacterRuntime('speaking');
+  assert.equal(runtime.canTransition('working'),true);
   const engine=new ProactiveEngine({
     experience:{proactiveEnabled:true},
     reminders:{snapshot:()=>[]},
