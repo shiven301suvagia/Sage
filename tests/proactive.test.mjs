@@ -18,3 +18,22 @@ test('proactive reminder presents a speaking emotion',async()=>{
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(runtime.state,'idle');
 });
+
+test('proactive context emotion follows the runtime transition graph',async()=>{
+  const states=[];
+  const runtime={state:'speaking',canTransition:next=>next==='idle'||next==='working',transition(next){this.state=next;return true;}};
+  const engine=new ProactiveEngine({
+    experience:{proactiveEnabled:true},
+    reminders:{snapshot:()=>[]},
+    context:{snapshot:()=>({desktopContextEnabled:true,activeApp:{process:'Code.exe'}})},
+    cooldown:300000,contextCooldown:0,presentationMs:0,
+    runtime,onStateChange:s=>states.push(s),
+    shouldPresent:()=>true,onSuggestion:async()=>{}
+  });
+  const result=await engine.tick(0);
+  assert.equal(result.kind,'context');
+  assert.equal(runtime.state,'working');
+  assert.deepEqual(states[0],{state:'working',emotion:'focused'});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(runtime.state,'idle');
+});
