@@ -10,13 +10,14 @@ export class ProactiveEngine{
  #emotionState(emotion){return emotion==='encouraged'?'excited':emotion==='concerned'?'concerned':emotion==='helpful'?'speaking':emotion==='focused'?'working':'idle';}
  #applyEmotion(emotion){const state=this.#emotionState(emotion);if(this.runtime?.state!==state)this.runtime?.transition(state);this.onStateChange({state,emotion});}
  #restore(){if(this.runtime?.state&&this.runtime.state!=='idle'&&this.runtime.canTransition?.('idle'))this.runtime.transition('idle');this.onStateChange({state:'idle',emotion:'neutral'});}
+ async #present(suggestion,emotion='helpful'){this.#applyEmotion(emotion);try{return await this.onSuggestion(suggestion);}finally{setTimeout(()=>this.#restore(),1800);}}
  async tick(now=Date.now()){
   if(!this.experience?.proactiveEnabled)return null;
   const presence=this.presence.tick(now);
   if(presence.mode==='sleeping'||presence.mode==='quiet')return null;
   const pending=this.reminders?.snapshot?.().filter(x=>!x.done).sort((a,b)=>Date.parse(a.dueAt||'9999')-Date.parse(b.dueAt||'9999'))||[];
   const next=pending.find(x=>x.dueAt&&Date.parse(x.dueAt)>now);
-  if(now-this.lastSuggestionAt>=this.cooldown&&next){const until=Date.parse(next.dueAt)-now;if(until<=15*60*1000&&until>=0){this.lastSuggestionAt=now;const suggestion={kind:'reminder',text:`You have a reminder coming up: “${next.text}”.`,reminderId:next.id};await this.onSuggestion(suggestion);return suggestion;}}
+  if(now-this.lastSuggestionAt>=this.cooldown&&next){const until=Date.parse(next.dueAt)-now;if(until<=15*60*1000&&until>=0){this.lastSuggestionAt=now;const suggestion={kind:'reminder',text:`You have a reminder coming up: “${next.text}”.`,reminderId:next.id};await this.#present(suggestion,'helpful');return suggestion;}}
   if(now-this.lastContextSuggestionAt<this.contextCooldown)return null;
   const snapshot=this.context?.snapshot?.();if(!snapshot?.desktopContextEnabled)return null;
   const app=snapshot.activeApp;if(!app?.process)return null;
@@ -24,6 +25,6 @@ export class ProactiveEngine{
   const key=`${app.process}:${hint.text}`;if(key===this.lastContextKey)return null;
   if(!this.presence.canInterrupt(now))return null;
   this.presence.observeContext(app.process,now);this.lastContextKey=key;this.lastContextSuggestionAt=now;
-  const suggestion={kind:'context',text:hint.text,process:app.process};await this.onSuggestion(suggestion);return suggestion;
+  const suggestion={kind:'context',text:hint.text,process:app.process};await this.#present(suggestion,'focused');return suggestion;
  }
 }
