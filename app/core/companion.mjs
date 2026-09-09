@@ -21,7 +21,8 @@ export class CompanionPresence{
   setQuiet(quiet=true){this.mode=quiet?'quiet':'available';return this.mode;}
   tick(now=this.clock()){
     if(this.mode==='quiet'||this.mode==='sleeping')return this.snapshot(now);
-    if(this.lastInteractionAt&&now-this.lastInteractionAt>=this.idleAfterMs)this.mode='sleeping';
+    if(this.lastInteractionAt&&now-this.lastInteractionAt>=this.idleAfterMs){this.mode='sleeping';return this.snapshot(now);}
+    if(this.mode==='focused'&&this.lastContextAt&&now-this.lastContextAt>=this.focusCooldown)this.mode='available';
     return this.snapshot(now);
   }
   canInterrupt(now=this.clock()){
