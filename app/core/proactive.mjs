@@ -9,8 +9,8 @@ export class ProactiveEngine{
  stop(){if(this.timer)clearInterval(this.timer);this.timer=null;if(this.presentationTimer)clearTimeout(this.presentationTimer);this.presentationTimer=null;}
  observeInteraction(now=Date.now()){return this.presence.observeInteraction(now);}
  #emotionState(emotion){return emotion==='encouraged'?'excited':emotion==='concerned'?'concerned':emotion==='helpful'?'speaking':emotion==='focused'?'working':'idle';}
- #applyEmotion(emotion){const state=this.#emotionState(emotion);if(this.runtime?.state!==state&&this.runtime?.canTransition?.(state))this.runtime.transition(state);this.onStateChange({state,emotion});return state;}
- #restore(expectedState){if(this.runtime?.state===expectedState&&this.runtime.canTransition?.('idle'))this.runtime.transition('idle');this.onStateChange({state:'idle',emotion:'neutral'});}
+ #applyEmotion(emotion){const target=this.#emotionState(emotion);if(this.runtime?.state!==target){if(this.runtime?.canTransition?.(target))this.runtime.transition(target);else if(this.runtime?.canTransition?.('idle')){this.runtime.transition('idle');if(this.runtime?.canTransition?.(target))this.runtime.transition(target);}}const state=this.runtime?.state||target;this.onStateChange({state,emotion});return state;}
+ #restore(expectedState){if(this.runtime){if(this.runtime.state===expectedState&&this.runtime.canTransition?.('idle'))this.runtime.transition('idle');return;}this.onStateChange({state:'idle',emotion:'neutral'});}
  async #present(suggestion,emotion='helpful'){if(!await this.shouldPresent(suggestion))return false;const state=this.#applyEmotion(emotion);try{await this.onSuggestion(suggestion);return true;}finally{if(this.presentationTimer)clearTimeout(this.presentationTimer);this.presentationTimer=setTimeout(()=>{this.presentationTimer=null;this.#restore(state);},this.presentationMs);}}
  async tick(now=Date.now()){
   if(!this.experience?.proactiveEnabled)return null;
