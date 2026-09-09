@@ -2,7 +2,8 @@ export const SAGE_STATES=Object.freeze(['dormant','awakening','idle','thinking',
 const ALLOWED=new Map([
  ['dormant',new Set(['awakening'])],['awakening',new Set(['idle','sleeping'])],
  ['idle',new Set(['thinking','speaking','working','sleeping','dormant','excited','concerned'])],
- ['thinking',new Set(['speaking','idle','concerned','excited'])],['speaking',new Set(['idle','sleeping','excited','concerned'])],
+ ['thinking',new Set(['speaking','idle','working','concerned','excited'])],
+ ['speaking',new Set(['idle','working','sleeping','excited','concerned'])],
  ['working',new Set(['idle','thinking','speaking','concerned','excited'])],
  ['sleeping',new Set(['awakening','dormant','idle'])],['concerned',new Set(['idle','thinking','speaking'])],['excited',new Set(['idle','speaking','thinking'])]
 ]);
