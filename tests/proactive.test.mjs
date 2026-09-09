@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {ProactiveEngine} from '../app/core/proactive.mjs';
 
-const waitForPresentationToRestore=()=>new Promise(resolve=>setTimeout(resolve,40));
+const waitForPresentationToRestore=()=>new Promise(resolve=>setTimeout(resolve,300));
 
 test('proactive reminder presents a speaking emotion',async()=>{
   const states=[];
@@ -10,7 +10,7 @@ test('proactive reminder presents a speaking emotion',async()=>{
   const engine=new ProactiveEngine({
     experience:{proactiveEnabled:true},
     reminders:{snapshot:()=>[{id:'r1',text:'stretch',dueAt:new Date(5000).toISOString(),done:false}]},
-    cooldown:0,contextCooldown:300000,presentationMs:20,
+    cooldown:0,contextCooldown:300000,presentationMs:250,
     runtime,onStateChange:s=>states.push(s),shouldPresent:()=>true,onSuggestion:async()=>{}
   });
   const result=await engine.tick(0);
@@ -28,7 +28,7 @@ test('proactive context emotion follows the runtime transition graph',async()=>{
     experience:{proactiveEnabled:true},
     reminders:{snapshot:()=>[]},
     context:{snapshot:()=>({desktopContextEnabled:true,activeApp:{process:'Code.exe'}})},
-    cooldown:300000,contextCooldown:0,presentationMs:20,
+    cooldown:300000,contextCooldown:0,presentationMs:250,
     runtime,onStateChange:s=>states.push(s),shouldPresent:()=>true,onSuggestion:async()=>{}
   });
   const result=await engine.tick(0);
