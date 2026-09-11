@@ -10,7 +10,35 @@
     "start": "electron .",
     "test": "node --test",
     "check": "node --check app/main.mjs && node --check app/preload.mjs && node --check app/core/runtime.mjs && node --check app/core/memory.mjs && node --check app/core/policy.mjs && node --check app/core/assistant.mjs && node --check app/core/model.mjs && node --check app/core/reminders.mjs && node --check app/core/experience.mjs && node --check app/core/proactive.mjs && node --check app/core/voice.mjs && node --check app/core/plugin.mjs && node --check app/core/context.mjs && node --check app/renderer/app.mjs && npm test",
-    "validate:package": "node -e \"const p=require('./package.json'); if(p.private!==true) throw new Error('SAGE must remain private until release'); if(p.engines?.node!=='>=22') throw new Error('Node 22+ is required'); console.log('package metadata OK')\""
+    "validate:package": "node -e \"const p=require('./package.json'); if(p.private!==true) throw new Error('SAGE must remain private until release'); if(p.type!=='module') throw new Error('SAGE must use ESM'); if(p.main!=='app/main.mjs') throw new Error('Unexpected Electron entry point'); if(p.engines?.node!=='>=22') throw new Error('Node 22+ is required'); if(p.devDependencies?.electron!=='42.11.2') throw new Error('Unexpected Electron version'); if(p.devDependencies?.['electron-builder']!=='26.15.3') throw new Error('Unexpected electron-builder version'); console.log('package metadata OK')\"",
+    "dist:win": "electron-builder --win nsis --x64"
   },
-  "devDependencies": { "electron": "42.11.2" }
+  "devDependencies": {
+    "electron": "42.11.2",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.shiven.sage",
+    "productName": "SAGE",
+    "asar": true,
+    "directories": { "output": "dist" },
+    "files": [
+      "app/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "artifactName": "SAGE-${version}-Setup-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
 }
