@@ -22,5 +22,7 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --ignore-scripts
+      - name: Validate package metadata
+        run: npm run validate:package
       - name: Syntax check and tests
         run: npm run check
