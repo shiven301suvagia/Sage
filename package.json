@@ -9,7 +9,8 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test",
-    "check": "node --check app/main.mjs && node --check app/preload.mjs && node --check app/core/runtime.mjs && node --check app/core/memory.mjs && node --check app/core/policy.mjs && node --check app/core/assistant.mjs && node --check app/core/model.mjs && node --check app/core/reminders.mjs && node --check app/core/experience.mjs && node --check app/core/proactive.mjs && node --check app/core/voice.mjs && node --check app/core/plugin.mjs && node --check app/core/context.mjs && node --check app/renderer/app.mjs && npm test"
+    "check": "node --check app/main.mjs && node --check app/preload.mjs && node --check app/core/runtime.mjs && node --check app/core/memory.mjs && node --check app/core/policy.mjs && node --check app/core/assistant.mjs && node --check app/core/model.mjs && node --check app/core/reminders.mjs && node --check app/core/experience.mjs && node --check app/core/proactive.mjs && node --check app/core/voice.mjs && node --check app/core/plugin.mjs && node --check app/core/context.mjs && node --check app/renderer/app.mjs && npm test",
+    "validate:package": "node -e \"const p=require('./package.json'); if(p.private!==true) throw new Error('SAGE must remain private until release'); if(p.engines?.node!=='>=22') throw new Error('Node 22+ is required'); console.log('package metadata OK')\""
   },
   "devDependencies": { "electron": "42.11.2" }
 }
