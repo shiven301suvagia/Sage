@@ -38,10 +38,30 @@ jobs:
       - name: Build Windows installer
         run: npm run dist:win
 
-      - name: Upload Windows installer
+      - name: Validate Windows installer output
+        shell: pwsh
+        run: |
+          $installers = @(Get-ChildItem -Path dist -Filter '*Setup*.exe' -File)
+          if ($installers.Count -ne 1) {
+            throw "Expected exactly one Windows installer matching *Setup*.exe, found $($installers.Count)."
+          }
+          if ($installers[0].Length -le 0) {
+            throw "Windows installer is empty: $($installers[0].FullName)"
+          }
+
+      - name: Generate installer checksum
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path dist -Filter '*Setup*.exe' -File | Select-Object -First 1
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $installer.FullName).Hash.ToLowerInvariant()
+          "$hash  $($installer.Name)" | Set-Content -NoNewline -Encoding ascii -Path "$($installer.FullName).sha256"
+
+      - name: Upload Windows installer and checksum
         uses: actions/upload-artifact@v4
         with:
           name: SAGE-Windows-${{ github.ref_name }}
-          path: dist/*Setup*.exe
+          path: |
+            dist/*Setup*.exe
+            dist/*Setup*.exe.sha256
           if-no-files-found: error
           retention-days: 14
