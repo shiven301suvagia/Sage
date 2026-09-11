@@ -26,3 +26,5 @@ jobs:
         run: npm run validate:package
       - name: Syntax check and tests
         run: npm run check
+      - name: Run release regression tests
+        run: node --test tests/release-gate.test.mjs
