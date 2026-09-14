@@ -1,0 +1,5 @@
+import test from'node:test';import assert from'node:assert/strict';import{CharacterRuntime}from'../app/core/runtime.mjs';
+
+test('character runtime starts dormant and wakes through the intended lifecycle',()=>{const runtime=new CharacterRuntime('dormant');const changes=[];runtime.subscribe(change=>changes.push(change));assert.equal(runtime.state,'dormant');assert.equal(runtime.transition('idle'),false);assert.equal(runtime.transition('awakening'),true);assert.equal(runtime.state,'awakening');assert.equal(runtime.transition('idle'),true);assert.equal(runtime.state,'idle');assert.deepEqual(changes.map(x=>x.state),['awakening','idle']);});
+
+test('character runtime rejects unsafe state jumps',()=>{const runtime=new CharacterRuntime('dormant');assert.equal(runtime.transition('thinking'),false);assert.equal(runtime.transition('sleeping'),false);assert.equal(runtime.state,'dormant');assert.equal(runtime.transition('awakening'),true);assert.equal(runtime.transition('sleeping'),true);assert.equal(runtime.transition('thinking'),false);assert.equal(runtime.state,'sleeping');});
