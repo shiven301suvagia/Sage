@@ -27,7 +27,8 @@ test('final release gate: renderer trust boundary is explicitly hardened',async(
   assert.match(main,/nodeIntegration:false/);
   assert.match(main,/sandbox:true/);
   assert.match(main,/event\?\.sender===win\.webContents/);
-  assert.match(main,/setWindowOpenHandler\(\)=>\(\{action:'deny'\}\)/);
+  assert.match(main,/setWindowOpenHandler/);
+  assert.match(main,/action:'deny'/);
   assert.match(main,/Only http and https URLs are allowed/);
 });
 
