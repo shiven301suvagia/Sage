@@ -38,3 +38,20 @@ test('proactive context emotion follows the runtime transition graph',async()=>{
   await waitForPresentationToRestore();
   assert.equal(runtime.state,'idle');
 });
+
+test('proactive presentation wakes a sleeping runtime before showing',async()=>{
+  const states=[];
+  const runtime={state:'sleeping',canTransition:next=>next==='awakening'||next==='idle'||next==='speaking',transition(next){this.state=next;return true;},wake(){return this.transition('awakening');}};
+  const engine=new ProactiveEngine({
+    experience:{proactiveEnabled:true},
+    reminders:{snapshot:()=>[{id:'r2',text:'drink water',dueAt:new Date(5000).toISOString(),done:false}]},
+    cooldown:0,contextCooldown:300000,presentationMs:250,
+    runtime,onStateChange:s=>states.push(s),shouldPresent:()=>true,onSuggestion:async()=>{}
+  });
+  const result=await engine.tick(0);
+  assert.equal(result.kind,'reminder');
+  assert.equal(runtime.state,'speaking');
+  assert.deepEqual(states[0],{state:'speaking',emotion:'helpful'});
+  await waitForPresentationToRestore();
+  assert.equal(runtime.state,'idle');
+});
