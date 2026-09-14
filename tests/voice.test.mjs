@@ -36,3 +36,20 @@ test('voice controller maps dashed recognition error codes',()=>{
  FakeRecognition.instance.onerror?.({error:'not-allowed'});
  assert.equal(error.message,'Microphone permission was denied.');
 });
+
+test('voice controller can stop and restart cleanly across supported desktop implementations',async()=>{
+ const voice=new VoiceController({SpeechRecognitionImpl:FakeRecognition});
+ const events=[];
+ voice.on('start',()=>events.push('start'));
+ voice.on('end',()=>events.push('end'));
+ assert.equal(voice.start(),true);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(voice.active,true);
+ assert.equal(voice.stop(),true);
+ assert.equal(voice.active,false);
+ assert.equal(voice.start(),true);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(voice.active,true);
+ assert.deepEqual(events,['start','end','start']);
+ voice.stop();
+});
