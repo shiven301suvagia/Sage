@@ -42,7 +42,7 @@ test('Stage 10 can transition speaking to the focused working state',async()=>{
 });
 
 test('Stage 10 does not present an emotion the runtime cannot enter',async()=>{
-  const runtime=new CharacterRuntime('dormant');
+  const runtime={state:'dormant',wake(){this.state='awakening';return true;},canTransition:next=>next==='awakening',transition(){return false;}};
   let presented=false;
   const engine=new ProactiveEngine({
     experience:{proactiveEnabled:true},
@@ -53,5 +53,5 @@ test('Stage 10 does not present an emotion the runtime cannot enter',async()=>{
   const result=await engine.tick(0);
   assert.equal(result,null);
   assert.equal(presented,false);
-  assert.equal(runtime.state,'dormant');
+  assert.equal(runtime.state,'awakening');
 });
