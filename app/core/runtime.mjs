@@ -17,7 +17,7 @@ export class CharacterRuntime{
  wake(){if(this.#state==='dormant'||this.#state==='sleeping')return this.transition('awakening');return this.#state!=='dormant';}
  beginThinking(){this.cancelSleep();return this.#state==='idle'&&this.transition('thinking');}
  beginSpeaking(){this.cancelSleep();return (this.#state==='thinking'||this.#state==='working'||this.#state==='idle')&&this.transition('speaking');}
- beginWorking(){this.cancelSleep();return (this.#state==='thinking'||this.#state==='idle')&&this.transition('working');}
+ beginWorking(){this.cancelSleep();return this.#state==='idle'&&this.transition('working');}
  finish(){return ['thinking','speaking','working','concerned','excited'].includes(this.#state)&&this.transition('idle');}
  fail(){return ['thinking','working'].includes(this.#state)&&this.transition('concerned');}
  scheduleSleep(){this.cancelSleep();if(!this.sleepAfterMs||this.#state!=='idle')return false;this.#sleepTimer=this.#clock(()=>{this.#sleepTimer=null;if(this.#state==='idle')this.transition('sleeping');},this.sleepAfterMs);return true;}
