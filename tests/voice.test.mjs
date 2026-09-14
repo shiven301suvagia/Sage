@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { VoiceController } from '../app/core/voice.mjs';
 
 class FakeRecognition{
- static instance;
- constructor(){FakeRecognition.instance=this;this.started=false;this.stopped=false;}
+ static instances=[];
+ constructor(){this.started=false;this.stopped=false;FakeRecognition.instances.push(this);}
  start(){this.started=true;queueMicrotask(()=>this.onstart?.());}
  stop(){this.stopped=true;queueMicrotask(()=>this.onend?.());}
 }
@@ -22,7 +22,7 @@ test('voice controller forwards final transcripts',async()=>{
  voice.start();
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(voice.active,true);
- FakeRecognition.instance.onresult?.({resultIndex:0,results:[{0:{transcript:'hello Sage'},isFinal:true}]});
+ FakeRecognition.instances.at(-1).onresult?.({resultIndex:0,results:[{0:{transcript:'hello Sage'},isFinal:true}]});
  assert.equal(result.text,'hello Sage');
  assert.equal(result.final,true);
  voice.stop();
@@ -33,7 +33,7 @@ test('voice controller maps dashed recognition error codes',()=>{
  let error=null;
  voice.on('error',data=>{error=data;});
  voice.start();
- FakeRecognition.instance.onerror?.({error:'not-allowed'});
+ FakeRecognition.instances.at(-1).onerror?.({error:'not-allowed'});
  assert.equal(error.message,'Microphone permission was denied.');
 });
 
@@ -45,11 +45,15 @@ test('voice controller can stop and restart cleanly across supported desktop imp
  assert.equal(voice.start(),true);
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(voice.active,true);
+ const first=FakeRecognition.instances.at(-1);
  assert.equal(voice.stop(),true);
  assert.equal(voice.active,false);
+ assert.equal(first.stopped,true);
+ assert.deepEqual(events,['start','end']);
  assert.equal(voice.start(),true);
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(voice.active,true);
+ assert.notEqual(FakeRecognition.instances.at(-1),first);
  assert.deepEqual(events,['start','end','start']);
  voice.stop();
 });
