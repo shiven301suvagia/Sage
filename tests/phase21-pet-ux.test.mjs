@@ -1,0 +1,6 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs/promises';import path from'node:path';import{fileURLToPath}from'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');const read=p=>fs.readFile(path.join(root,p),'utf8');
+
+test('Phase 21: pet owns pointer interaction and blocks native image dragging',async()=>{const html=await read('app/renderer/index.html');const source=await read('app/renderer/app.mjs');const css=await read('app/renderer/styles.css');assert.match(html,/draggable="false"/);assert.match(source,/sage\.draggable=false/);assert.match(source,/dragstart/);assert.match(css,/pointer-events:none/);assert.match(css,/user-select:none/);});
+test('Phase 21: pet is compact desktop companion size',async()=>{const css=await read('app/renderer/styles.css');assert.match(css,/\.pet\{[^}]*width:130px;height:190px/);assert.match(css,/\.pet #sage\{[^}]*width:98px;height:180px/);});
+test('Phase 21: pet has distinct idle wake sleep thinking and speaking motion',async()=>{const css=await read('app/renderer/styles.css');for(const state of ['idle','awakening','sleeping','thinking','speaking'])assert.match(css,new RegExp(`\\.pet\\.emotion-${state} #sage\\{animation:`));});
