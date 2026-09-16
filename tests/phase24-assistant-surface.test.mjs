@@ -1,0 +1,8 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs/promises';import path from'node:path';import{fileURLToPath}from'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');const read=p=>fs.readFile(path.join(root,p),'utf8');
+
+test('Phase 24: pet opens the real Sage assistant surface',async()=>{const html=await read('app/renderer/index.html');const app=await read('app/renderer/app.mjs');const main=await read('app/main.mjs');assert.match(html,/id="chat" class="chat"/);assert.match(html,/id="messages" class="messages"/);assert.match(html,/id="prompt" name="prompt" maxlength="4000"/);assert.match(app,/window\.sage\.assistant\.ask/);assert.match(app,/window\.sage\.window\.resizeForChat\(true\)/);assert.match(app,/window\.sage\.window\.resizeForChat\(false\)/);assert.match(main,/ipcMain\.handle\('assistant:ask'/);assert.match(main,/ipcMain\.handle\('assistant:confirm'/);});
+
+test('Phase 24: confirmation requests stay explicit',async()=>{const app=await read('app/renderer/app.mjs');assert.match(app,/result\?\.kind==='confirmation'/);assert.match(app,/textContent='Allow'/);assert.match(app,/textContent='Cancel'/);assert.match(app,/window\.sage\.assistant\.confirm\(result\.confirmation\.token\)/);});
+
+test('Phase 24: assistant input remains bounded and local IPC stays guarded',async()=>{const main=await read('app/main.mjs');const preload=await read('app/preload.mjs');assert.match(main,/textArg\(text,4000,'Assistant input'\)/);assert.match(main,/guard\(async\(_e,text\)=>/);assert.match(preload,/assistant:Object\.freeze\(\{ask:/);assert.match(preload,/confirm:/);});
