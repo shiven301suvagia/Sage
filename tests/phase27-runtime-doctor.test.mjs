@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs/promises';import path from'node:path';import{fileURLToPath}from'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+test('Phase 27: runtime doctor is present and exposed',async()=>{const script=await fs.readFile(path.join(root,'scripts/doctor.mjs'),'utf8');const pkg=JSON.parse(await fs.readFile(path.join(root,'package.json'),'utf8'));assert.match(script,/SAGE runtime doctor/);assert.match(script,/SAGE_OLLAMA_MODEL/);assert.match(script,/OPENAI_API_KEY/);assert.equal(pkg.scripts.doctor,'node scripts/doctor.mjs');});
